@@ -1,0 +1,11 @@
+/* Scoped styles for the /portfolio route. Tailwind's preflight already
+   handles box-sizing/margin/padding resets, so this only adds what
+   preflight doesn't: the hero gradient text treatment. */
+
+.hero-heading {
+  background: linear-gradient(180deg, #646973 0%, #bbccd7 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
