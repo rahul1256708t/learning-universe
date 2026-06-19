@@ -233,6 +233,12 @@ export default function LandingPage() {
             <GradientButton href="/signup">Create Account</GradientButton>
             <GhostButton href="/login">Sign In</GhostButton>
           </FI>
+
+          <FI delay={0.4} className="mt-16">
+            <p className="font-heading text-xs font-medium uppercase tracking-[0.25em] text-[#D7E2EA]/30">
+              Owner: Rahul Gupta
+            </p>
+          </FI>
         </section>
       </main>
     </AppBackground>
