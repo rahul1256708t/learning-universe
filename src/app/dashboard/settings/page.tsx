@@ -13,25 +13,57 @@ export default function SettingsPage() {
   ] as const
 
   return (
-    <Card className="border-white/10 bg-card/75 backdrop-blur-xl">
-      <CardHeader>
-        <CardTitle>Settings</CardTitle>
-        <CardDescription>Deployment readiness for Vercel and Supabase.</CardDescription>
-      </CardHeader>
-      <CardContent className="flex flex-col gap-3">
-        {rows.map(([key, ready]) => (
-          <div key={key} className="flex items-center justify-between rounded-lg border border-white/10 bg-white/[0.04] p-4">
-            <span className="font-mono text-sm">{key}</span>
-            <span className="flex items-center gap-2 text-sm">
-              {ready ? <CheckCircle2Icon /> : <XCircleIcon />}
-              {ready ? "Configured" : "Missing"}
-            </span>
-          </div>
-        ))}
-        <p className="text-sm text-muted-foreground">
-          Supabase client status: {hasSupabaseConfig() ? "ready" : "missing public env vars"}.
+    <main className="flex flex-col gap-6">
+      <div className="overflow-hidden">
+        <h1
+          className="hero-heading font-heading font-black uppercase leading-none tracking-tight"
+          style={{ fontSize: "clamp(2.5rem, 8vw, 96px)" }}
+        >
+          Settings
+        </h1>
+        <p className="mt-2 font-heading text-sm font-medium uppercase tracking-widest text-[#D7E2EA]/50">
+          Deployment readiness for Vercel and Supabase
         </p>
-      </CardContent>
-    </Card>
+      </div>
+
+      <Card className="border-white/10 bg-black/40 backdrop-blur-xl">
+        <CardHeader>
+          <CardTitle className="font-heading text-base font-black uppercase tracking-wider text-[#D7E2EA]">
+            Environment Variables
+          </CardTitle>
+          <CardDescription className="text-[#D7E2EA]/40">
+            All variables must be set in your Vercel project settings.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-3">
+          {rows.map(([key, ready]) => (
+            <div
+              key={key}
+              className="flex items-center justify-between rounded-xl border border-white/8 bg-white/[0.03] px-4 py-3.5"
+            >
+              <span className="font-mono text-sm text-[#D7E2EA]/70">{key}</span>
+              <span
+                className={`flex items-center gap-1.5 font-heading text-xs font-medium uppercase tracking-wider ${
+                  ready ? "text-emerald-400" : "text-red-400"
+                }`}
+              >
+                {ready ? (
+                  <CheckCircle2Icon className="size-4" />
+                ) : (
+                  <XCircleIcon className="size-4" />
+                )}
+                {ready ? "Configured" : "Missing"}
+              </span>
+            </div>
+          ))}
+          <p className="mt-2 font-heading text-xs uppercase tracking-wider text-[#D7E2EA]/30">
+            Supabase client:{" "}
+            <span className={hasSupabaseConfig() ? "text-emerald-400" : "text-red-400"}>
+              {hasSupabaseConfig() ? "Ready" : "Missing public env vars"}
+            </span>
+          </p>
+        </CardContent>
+      </Card>
+    </main>
   )
 }

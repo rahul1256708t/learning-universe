@@ -17,7 +17,6 @@ import { AppBackground } from "@/components/app-background"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Separator } from "@/components/ui/separator"
 import { getModeName, getModelName } from "@/lib/learning"
 import { createClient } from "@/lib/supabase/server"
 
@@ -68,77 +67,99 @@ export async function DashboardShell({ children }: DashboardShellProps) {
   return (
     <AppBackground>
       <div className="mx-auto grid min-h-screen w-full max-w-7xl gap-4 px-4 py-4 md:grid-cols-[280px_minmax(0,1fr)] lg:px-6">
-        <aside className="flex flex-col gap-4 rounded-lg border border-white/10 bg-black/30 p-4 shadow-2xl shadow-cyan-950/20 backdrop-blur-xl">
-          <Link href="/dashboard/chat" className="flex items-center gap-3">
-            <span className="grid size-10 place-items-center rounded-lg border border-cyan-200/20 bg-cyan-300/10 text-cyan-100">
-              <RocketIcon />
+        {/* ── Sidebar ─────────────────────────────────── */}
+        <aside className="flex flex-col gap-5 rounded-2xl border border-white/10 bg-black/40 p-5 shadow-2xl shadow-black/40 backdrop-blur-xl">
+
+          {/* Logo */}
+          <Link href="/dashboard/chat" className="flex items-center gap-3 pb-1">
+            <span className="grid size-10 place-items-center rounded-xl border border-[#D7E2EA]/15 bg-[#D7E2EA]/5 text-[#D7E2EA]">
+              <RocketIcon className="size-4" />
             </span>
             <span>
-              <span className="block text-lg font-semibold">Learning Universe</span>
-              <span className="block text-xs text-muted-foreground">AI study command</span>
+              <span className="block font-heading text-base font-black uppercase tracking-widest text-[#D7E2EA]">
+                Learning
+              </span>
+              <span className="block font-heading text-[0.6rem] font-medium uppercase tracking-[0.25em] text-[#D7E2EA]/50">
+                Universe
+              </span>
             </span>
           </Link>
 
-          <Separator />
+          <div className="h-px bg-white/8" />
 
-          <nav className="flex flex-col gap-1">
+          {/* Nav */}
+          <nav className="flex flex-col gap-0.5">
             {navItems.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
-                className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-muted-foreground transition hover:bg-white/10 hover:text-foreground"
+                className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 font-heading text-sm font-medium uppercase tracking-wider text-[#D7E2EA]/50 transition-all duration-150 hover:bg-white/8 hover:text-[#D7E2EA]"
               >
-                <item.icon />
+                <item.icon className="size-4 shrink-0" />
                 {item.label}
               </Link>
             ))}
           </nav>
 
-          <Separator />
+          <div className="h-px bg-white/8" />
 
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Avatar>
-                <AvatarFallback>{initials}</AvatarFallback>
-              </Avatar>
-              <div className="min-w-0">
-                <p className="truncate text-sm font-medium">{profile?.full_name ?? "Student"}</p>
-                <p className="truncate text-xs text-muted-foreground">{user.email}</p>
-              </div>
+          {/* User */}
+          <div className="flex items-center gap-3">
+            <Avatar className="size-9 border border-white/15">
+              <AvatarFallback className="bg-[#D7E2EA]/10 font-heading text-xs font-bold uppercase text-[#D7E2EA]">
+                {initials}
+              </AvatarFallback>
+            </Avatar>
+            <div className="min-w-0">
+              <p className="truncate font-heading text-sm font-medium uppercase tracking-wide text-[#D7E2EA]">
+                {profile?.full_name ?? "Student"}
+              </p>
+              <p className="truncate text-xs text-[#D7E2EA]/40">{user.email}</p>
             </div>
           </div>
 
           <form action={signOut}>
-            <Button type="submit" variant="outline" className="w-full">
-              <LogOutIcon data-icon="inline-start" />
+            <Button
+              type="submit"
+              variant="outline"
+              className="w-full rounded-xl border-white/15 font-heading text-xs font-medium uppercase tracking-widest text-[#D7E2EA]/60 hover:border-white/25 hover:text-[#D7E2EA]"
+            >
+              <LogOutIcon className="size-3.5" data-icon="inline-start" />
               Logout
             </Button>
           </form>
 
-          <Separator />
+          <div className="h-px bg-white/8" />
 
-          <section className="min-h-0 flex-1">
-            <div className="mb-3 flex items-center gap-2 text-sm font-medium">
-              <HistoryIcon />
-              Chat history
+          {/* Chat history */}
+          <section className="min-h-0 flex-1 overflow-hidden">
+            <div className="mb-3 flex items-center gap-2 font-heading text-xs font-medium uppercase tracking-[0.2em] text-[#D7E2EA]/40">
+              <HistoryIcon className="size-3.5" />
+              Chat History
             </div>
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-1.5">
               {chats?.length ? (
                 chats.map((chat) => (
                   <Link
                     key={chat.id}
                     href={`/dashboard/chat?chatId=${chat.id}`}
-                    className="rounded-lg border border-white/10 bg-white/[0.04] p-3 transition hover:bg-white/[0.08]"
+                    className="rounded-xl border border-white/8 bg-white/[0.03] p-3 transition hover:bg-white/[0.07]"
                   >
-                    <p className="line-clamp-1 text-sm font-medium">{chat.title}</p>
-                    <div className="mt-2 flex flex-wrap gap-1">
-                      <Badge variant="secondary">{getModeName(chat.mode)}</Badge>
-                      <Badge variant="secondary">{getModelName(chat.model)}</Badge>
+                    <p className="line-clamp-1 font-heading text-xs font-medium uppercase tracking-wide text-[#D7E2EA]/80">
+                      {chat.title}
+                    </p>
+                    <div className="mt-1.5 flex flex-wrap gap-1">
+                      <Badge variant="secondary" className="text-[10px]">
+                        {getModeName(chat.mode)}
+                      </Badge>
+                      <Badge variant="secondary" className="text-[10px]">
+                        {getModelName(chat.model)}
+                      </Badge>
                     </div>
                   </Link>
                 ))
               ) : (
-                <p className="rounded-lg border border-dashed border-white/15 p-3 text-sm text-muted-foreground">
+                <p className="rounded-xl border border-dashed border-white/10 p-3 text-xs text-[#D7E2EA]/30">
                   Your previous chats will appear here.
                 </p>
               )}
