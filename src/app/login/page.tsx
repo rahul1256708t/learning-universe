@@ -11,7 +11,10 @@ export default async function LoginPage({ searchParams }: { searchParams: Search
   return (
     <AppBackground>
       <main className="grid min-h-screen place-items-center px-4 py-10">
-        <AuthForm mode="login" error={params.error} notice={notice} hasSupabase={hasSupabaseConfig()} />
+        <div className="flex w-full max-w-md flex-col items-center gap-4">
+          <AuthForm mode="login" error={params.error} notice={notice} hasSupabase={hasSupabaseConfig()} />
+          <p className="text-sm text-muted-foreground">Made by Rahul Gupta</p>
+        </div>
       </main>
     </AppBackground>
   )
