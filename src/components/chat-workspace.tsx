@@ -1,16 +1,19 @@
 "use client"
 
-import { useMemo, useState, useTransition } from "react"
+import { useMemo, useRef, useState, useTransition } from "react"
 import Link from "next/link"
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 import {
   ClipboardIcon,
+  FileTextIcon,
   Loader2Icon,
+  PaperclipIcon,
   PlusIcon,
   SendIcon,
   SparklesIcon,
   Trash2Icon,
+  XIcon,
 } from "lucide-react"
 import { toast } from "sonner"
 
@@ -36,6 +39,43 @@ type ChatWorkspaceProps = {
   hasOpenRouter: boolean
 }
 
+type Attachment = {
+  name: string
+  type: string
+  size: number
+  kind: "text" | "image"
+  content: string
+}
+
+// Files larger than this are rejected before reading to keep requests light.
+const MAX_FILE_BYTES = 5 * 1024 * 1024 // 5MB
+const ACCEPTED_FILE_TYPES =
+  ".txt,.md,.markdown,.csv,.json,.html,.css,.js,.jsx,.ts,.tsx,.py,.java,.c,.cpp,.cs,.go,.rb,.php,.sql,.yml,.yaml,.xml,.log,text/*,image/*"
+
+function formatBytes(bytes: number) {
+  if (bytes < 1024) return `${bytes} B`
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+}
+
+function readFileAsText(file: File) {
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(String(reader.result ?? ""))
+    reader.onerror = () => reject(reader.error ?? new Error("Could not read file."))
+    reader.readAsText(file)
+  })
+}
+
+function readFileAsDataUrl(file: File) {
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(String(reader.result ?? ""))
+    reader.onerror = () => reject(reader.error ?? new Error("Could not read file."))
+    reader.readAsDataURL(file)
+  })
+}
+
 export function ChatWorkspace({ chat, messages: initialMessages, hasOpenRouter }: ChatWorkspaceProps) {
   const [chatId, setChatId] = useState(chat?.id ?? null)
   const [model, setModel] = useState(chat?.model ?? DEFAULT_MODEL)
@@ -43,7 +83,10 @@ export function ChatWorkspace({ chat, messages: initialMessages, hasOpenRouter }
   const [messages, setMessages] = useState<Message[]>(initialMessages)
   const [input, setInput] = useState("")
   const [streamingAnswer, setStreamingAnswer] = useState("")
+  const [attachment, setAttachment] = useState<Attachment | null>(null)
+  const [isReadingFile, setIsReadingFile] = useState(false)
   const [isPending, startTransition] = useTransition()
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const modelItems = useMemo(
     () => OPENROUTER_MODELS.map((item) => ({ label: item.name, value: item.id })),
@@ -54,11 +97,51 @@ export function ChatWorkspace({ chat, messages: initialMessages, hasOpenRouter }
     []
   )
 
+  async function handleFileSelected(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0]
+    // Reset the input so selecting the same file again still fires onChange.
+    event.target.value = ""
+    if (!file) return
+
+    if (file.size > MAX_FILE_BYTES) {
+      toast.error(`File is too large. Max size is ${formatBytes(MAX_FILE_BYTES)}.`)
+      return
+    }
+
+    const isImage = file.type.startsWith("image/")
+    setIsReadingFile(true)
+    try {
+      const content = isImage ? await readFileAsDataUrl(file) : await readFileAsText(file)
+      setAttachment({
+        name: file.name,
+        type: file.type || (isImage ? "image" : "text/plain"),
+        size: file.size,
+        kind: isImage ? "image" : "text",
+        content,
+      })
+      toast.success(`Attached ${file.name}.`)
+    } catch {
+      toast.error("Could not read that file.")
+    } finally {
+      setIsReadingFile(false)
+    }
+  }
+
+  function buildDisplayContent(message: string, file: Attachment | null) {
+    if (!file) return message
+    if (file.kind === "image") {
+      return message ? `${message}\n\n[Attached image: ${file.name}]` : `[Attached image: ${file.name}]`
+    }
+    const block = `----- Attached file: ${file.name} -----\n\`\`\`\n${file.content}\n\`\`\``
+    return message ? `${message}\n\n${block}` : block
+  }
+
   async function submitMessage() {
     const message = input.trim()
+    const file = attachment
 
-    if (!message) {
-      toast.error("Type a question before launch.")
+    if (!message && !file) {
+      toast.error("Type a question or attach a file before launch.")
       return
     }
 
@@ -72,12 +155,13 @@ export function ChatWorkspace({ chat, messages: initialMessages, hasOpenRouter }
       chat_id: chatId ?? "pending",
       user_id: "current-user",
       role: "user",
-      content: message,
+      content: buildDisplayContent(message, file),
       created_at: new Date().toISOString(),
     }
 
     setMessages((current) => [...current, pendingUserMessage])
     setInput("")
+    setAttachment(null)
     setStreamingAnswer("")
 
     startTransition(async () => {
@@ -85,7 +169,15 @@ export function ChatWorkspace({ chat, messages: initialMessages, hasOpenRouter }
         const response = await fetch("/api/chat", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ message, model, mode, chatId }),
+          body: JSON.stringify({
+            message,
+            model,
+            mode,
+            chatId,
+            attachment: file
+              ? { name: file.name, type: file.type, kind: file.kind, content: file.content }
+              : null,
+          }),
         })
 
         if (!response.ok || !response.body) {
@@ -260,11 +352,68 @@ export function ChatWorkspace({ chat, messages: initialMessages, hasOpenRouter }
             <Textarea
               value={input}
               onChange={(event) => setInput(event.target.value)}
-              placeholder="Ask a study question, paste homework, request notes, or generate a quiz..."
+              placeholder="Ask a study question, paste homework, attach a file, or generate a quiz..."
               className="min-h-28 resize-none rounded-lg border-white/8 bg-black/20 text-[#D7E2EA] placeholder:text-[#D7E2EA]/25"
             />
+
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept={ACCEPTED_FILE_TYPES}
+              onChange={handleFileSelected}
+              className="hidden"
+            />
+
+            {attachment ? (
+              <div className="mt-3 flex items-center gap-3 rounded-lg border border-white/10 bg-black/30 px-3 py-2">
+                {attachment.kind === "image" ? (
+                  /* eslint-disable-next-line @next/next/no-img-element */
+                  <img
+                    src={attachment.content}
+                    alt={attachment.name}
+                    className="size-10 shrink-0 rounded-md border border-white/10 object-cover"
+                  />
+                ) : (
+                  <span className="flex size-10 shrink-0 items-center justify-center rounded-md border border-white/10 bg-white/5 text-[#D7E2EA]/70">
+                    <FileTextIcon className="size-5" />
+                  </span>
+                )}
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-heading text-xs font-medium text-[#D7E2EA]/85">{attachment.name}</p>
+                  <p className="text-[10px] uppercase tracking-wider text-[#D7E2EA]/40">
+                    {attachment.kind === "image" ? "Image" : "Text"} · {formatBytes(attachment.size)}
+                  </p>
+                </div>
+                <Button
+                  type="button"
+                  size="icon-xs"
+                  variant="ghost"
+                  onClick={() => setAttachment(null)}
+                  aria-label="Remove attachment"
+                  className="text-[#D7E2EA]/40 hover:text-[#D7E2EA]"
+                >
+                  <XIcon className="size-3.5" />
+                </Button>
+              </div>
+            ) : null}
+
             <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <div className="flex flex-wrap gap-1.5">
+              <div className="flex flex-wrap items-center gap-1.5">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isReadingFile}
+                  className="rounded-xl border-white/15 font-heading text-[10px] uppercase tracking-widest text-[#D7E2EA]/70"
+                >
+                  {isReadingFile ? (
+                    <Loader2Icon className="size-3 animate-spin" data-icon="inline-start" />
+                  ) : (
+                    <PaperclipIcon className="size-3" data-icon="inline-start" />
+                  )}
+                  Attach file
+                </Button>
                 <Badge variant="secondary" className="font-heading text-[10px] uppercase tracking-wider">
                   {getModelName(model)}
                 </Badge>

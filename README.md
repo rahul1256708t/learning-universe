@@ -7,6 +7,7 @@ Learning Universe is a production-ready universe-themed AI learning app built wi
 - Supabase email/password signup, login, logout, profile, and protected dashboard
 - Secure `/api/chat` route that calls OpenRouter only on the server
 - Streaming AI responses with Markdown rendering and copy buttons
+- File attachments in chat: attach a text/code file or image and ask questions about it (text is embedded into the prompt; images are sent to vision-capable models)
 - Chat history sidebar, new chat, delete chat, and automatic saving
 - Learning modes: Tutor, Homework, Notes, Quiz, Exam Prep, ELI5, Formula Helper, and NCERT-style answers
 - Supabase tables and RLS policies for `profiles`, `chats`, `messages`, and `usage_logs`
