@@ -5,6 +5,7 @@ import {
   BrainCircuitIcon,
   HistoryIcon,
   InfoIcon,
+  LibraryIcon,
   LogOutIcon,
   MessageSquareIcon,
   RocketIcon,
@@ -28,6 +29,7 @@ type DashboardShellProps = {
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: BookOpenIcon },
   { href: "/dashboard/chat", label: "Chat", icon: MessageSquareIcon },
+  { href: "/dashboard/materials", label: "Materials", icon: LibraryIcon },
   { href: "/dashboard/models", label: "Models", icon: BrainCircuitIcon },
   { href: "/dashboard/profile", label: "Profile", icon: UserRoundIcon },
   { href: "/dashboard/settings", label: "Settings", icon: SettingsIcon },

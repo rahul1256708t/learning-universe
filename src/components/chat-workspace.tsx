@@ -190,6 +190,11 @@ export function ChatWorkspace({ chat, messages: initialMessages, hasOpenRouter }
           setChatId(nextChatId)
         }
 
+        const toolsUsed = response.headers.get("x-agent-tools")?.split(",").filter(Boolean) ?? []
+        if (toolsUsed.includes("search_materials")) {
+          toast.success("Agent searched your study materials.")
+        }
+
         const reader = response.body.getReader()
         const decoder = new TextDecoder()
         let answer = ""

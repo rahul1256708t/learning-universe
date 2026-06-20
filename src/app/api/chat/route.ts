@@ -9,6 +9,7 @@ import {
   type LearningModeId,
 } from "@/lib/learning"
 import { createClient } from "@/lib/supabase/server"
+import { AGENT_TOOLS, executeTool } from "@/lib/agent-tools"
 
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
@@ -62,16 +63,26 @@ function buildUserContent(message: string, attachment: Attachment | null) {
   return message ? `${message}\n\n${fileBlock}` : fileBlock
 }
 
-type OpenRouterChunk = {
-  choices?: Array<{
-    delta?: {
-      content?: string
-    }
-  }>
-  usage?: {
-    total_tokens?: number
-  }
+type ToolCall = {
+  id: string
+  type: "function"
+  function: { name: string; arguments: string }
 }
+
+type AssistantMessage = {
+  role: "assistant"
+  content: string | null
+  tool_calls?: ToolCall[]
+}
+
+type OpenRouterResponse = {
+  choices?: Array<{ message?: AssistantMessage }>
+  usage?: { total_tokens?: number }
+  error?: { message?: string }
+}
+
+// Cap the agent loop so a misbehaving model can't call tools forever.
+const MAX_AGENT_STEPS = 5
 
 function jsonError(error: string, status: number) {
   return NextResponse.json({ error }, { status })
@@ -184,10 +195,17 @@ export async function POST(request: Request) {
     .limit(16)
 
   type ChatContent = string | Array<Record<string, unknown>>
-  const conversation: Array<{ role: string; content: ChatContent }> = [
+  type ConversationMessage = {
+    role: string
+    content: ChatContent | null
+    tool_calls?: ToolCall[]
+    tool_call_id?: string
+  }
+
+  const conversation: ConversationMessage[] = [
     {
       role: "system",
-      content: `${getModePrompt(mode)} You are Learning Universe. Keep answers study-focused, accurate, and formatted in Markdown when helpful. When the student attaches a file, read it carefully and ground your answer in its contents.`,
+      content: `${getModePrompt(mode)} You are Learning Universe, an autonomous study agent. You have tools: use "search_materials" to look inside the student's uploaded notes, textbooks, and documents whenever a question might be answered by their own materials, and cite the document names you used. Use "calculator" for any non-trivial arithmetic so results are exact. Plan briefly, call tools as needed, then give a clear, study-focused answer formatted in Markdown. When the student attaches a file, read it carefully and ground your answer in its contents.`,
     },
     ...(previousMessages.data ?? []).map((item) => ({
       role: item.role,
@@ -211,76 +229,96 @@ export async function POST(request: Request) {
     }
   }
 
-  const upstream = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-      "HTTP-Referer": process.env.OPENROUTER_SITE_URL ?? "http://localhost:3000",
-      "X-Title": process.env.OPENROUTER_SITE_NAME ?? "Learning Universe",
-    },
-    body: JSON.stringify({
-      model,
-      stream: true,
-      messages: conversation,
-      temperature: 0.45,
-      max_tokens: 1100,
-    }),
-  })
+  async function callModel(messages: ConversationMessage[], withTools: boolean) {
+    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+        "HTTP-Referer": process.env.OPENROUTER_SITE_URL ?? "http://localhost:3000",
+        "X-Title": process.env.OPENROUTER_SITE_NAME ?? "Learning Universe",
+      },
+      body: JSON.stringify({
+        model,
+        messages,
+        temperature: 0.4,
+        max_tokens: 1100,
+        ...(withTools ? { tools: AGENT_TOOLS, tool_choice: "auto" } : {}),
+      }),
+    })
 
-  if (!upstream.ok || !upstream.body) {
-    const errorText = await upstream.text()
-    return jsonError(errorText || "OpenRouter could not complete the request.", upstream.status)
+    const payload = (await response.json().catch(() => null)) as OpenRouterResponse | null
+    if (!response.ok || !payload) {
+      throw new Error(payload?.error?.message ?? "OpenRouter could not complete the request.")
+    }
+    return payload
+  }
+
+  // Agent loop: let the model call tools (search the student's materials, do
+  // exact math), feed each result back, and continue until it produces a final
+  // answer. Tool calls are resolved server-side and never persisted to history.
+  let finalAnswer = ""
+  let tokensUsed = 0
+  const toolsUsed = new Set<string>()
+
+  try {
+    for (let step = 0; step < MAX_AGENT_STEPS; step += 1) {
+      const isLastStep = step === MAX_AGENT_STEPS - 1
+      const payload = await callModel(conversation, !isLastStep)
+      tokensUsed += payload.usage?.total_tokens ?? 0
+
+      const message = payload.choices?.[0]?.message
+      const toolCalls = message?.tool_calls ?? []
+
+      if (toolCalls.length === 0 || isLastStep) {
+        finalAnswer = message?.content ?? ""
+        break
+      }
+
+      conversation.push({ role: "assistant", content: message?.content ?? "", tool_calls: toolCalls })
+
+      for (const call of toolCalls) {
+        toolsUsed.add(call.function.name)
+        let args: Record<string, unknown> = {}
+        try {
+          args = JSON.parse(call.function.arguments || "{}")
+        } catch {
+          args = {}
+        }
+        const result = await executeTool(call.function.name, args, { supabase, userId: user.id })
+        conversation.push({
+          role: "tool",
+          tool_call_id: call.id,
+          content: result.slice(0, 8000),
+        })
+      }
+    }
+  } catch (error) {
+    return jsonError(error instanceof Error ? error.message : "The agent could not complete the request.", 502)
+  }
+
+  if (!finalAnswer.trim()) {
+    finalAnswer = "I could not produce an answer for that. Please try rephrasing your question."
   }
 
   const encoder = new TextEncoder()
-  const decoder = new TextDecoder()
-  const reader = upstream.body.getReader()
-  let buffer = ""
-  let assistantAnswer = ""
-  let tokensUsed = 0
 
   const stream = new ReadableStream<Uint8Array>({
     async start(controller) {
       try {
-        while (true) {
-          const { value, done } = await reader.read()
-          if (done) break
-
-          buffer += decoder.decode(value, { stream: true })
-          const lines = buffer.split("\n")
-          buffer = lines.pop() ?? ""
-
-          for (const rawLine of lines) {
-            const line = rawLine.trim()
-            if (!line.startsWith("data:")) continue
-
-            const payload = line.slice(5).trim()
-            if (payload === "[DONE]") continue
-
-            try {
-              const chunk = JSON.parse(payload) as OpenRouterChunk
-              const text = chunk.choices?.[0]?.delta?.content ?? ""
-              tokensUsed = chunk.usage?.total_tokens ?? tokensUsed
-
-              if (text) {
-                assistantAnswer += text
-                controller.enqueue(encoder.encode(text))
-              }
-            } catch {
-              // Ignore malformed SSE keepalive chunks.
-            }
-          }
+        // The answer is already complete (tool loops can't be streamed token by
+        // token), so emit it in small chunks to keep the typing-style UI.
+        const chunkSize = 24
+        for (let index = 0; index < finalAnswer.length; index += chunkSize) {
+          controller.enqueue(encoder.encode(finalAnswer.slice(index, index + chunkSize)))
         }
 
-        if (assistantAnswer) {
-          await supabase.from("messages").insert({
-            chat_id: activeChatId,
-            user_id: user.id,
-            role: "assistant",
-            content: assistantAnswer,
-          })
-        }
+        await supabase.from("messages").insert({
+          chat_id: activeChatId,
+          user_id: user.id,
+          role: "assistant",
+          content: finalAnswer,
+        })
 
         await supabase.from("usage_logs").insert({
           user_id: user.id,
@@ -300,6 +338,7 @@ export async function POST(request: Request) {
       "Content-Type": "text/plain; charset=utf-8",
       "Cache-Control": "no-cache, no-transform",
       "x-chat-id": activeChatId,
+      "x-agent-tools": Array.from(toolsUsed).join(","),
     },
   })
 }
