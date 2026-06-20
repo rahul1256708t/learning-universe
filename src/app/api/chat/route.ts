@@ -13,11 +13,53 @@ import { createClient } from "@/lib/supabase/server"
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
 
+type Attachment = {
+  name?: string
+  type?: string
+  kind?: "text" | "image"
+  content?: string
+}
+
 type ChatRequest = {
   message?: string
   model?: string
   mode?: string
   chatId?: string | null
+  attachment?: Attachment | null
+}
+
+// Keep payloads sane: cap embedded text and base64 image size.
+const MAX_TEXT_CHARS = 120_000
+const MAX_IMAGE_DATA_URL_LENGTH = 8_000_000 // ~6MB of base64
+
+function sanitizeAttachment(attachment: Attachment | null | undefined): Attachment | null {
+  if (!attachment || typeof attachment.content !== "string" || !attachment.content) {
+    return null
+  }
+
+  const name = (attachment.name ?? "attachment").toString().slice(0, 200)
+  const kind = attachment.kind === "image" ? "image" : "text"
+
+  if (kind === "image") {
+    if (!attachment.content.startsWith("data:image/")) return null
+    if (attachment.content.length > MAX_IMAGE_DATA_URL_LENGTH) return null
+    return { name, type: attachment.type, kind, content: attachment.content }
+  }
+
+  return { name, type: attachment.type, kind, content: attachment.content.slice(0, MAX_TEXT_CHARS) }
+}
+
+function buildUserContent(message: string, attachment: Attachment | null) {
+  if (!attachment) return message
+
+  if (attachment.kind === "image") {
+    return message
+      ? `${message}\n\n[Attached image: ${attachment.name}]`
+      : `[Attached image: ${attachment.name}]`
+  }
+
+  const fileBlock = `----- Attached file: ${attachment.name} -----\n\`\`\`\n${attachment.content}\n\`\`\``
+  return message ? `${message}\n\n${fileBlock}` : fileBlock
 }
 
 type OpenRouterChunk = {
@@ -62,13 +104,14 @@ export async function POST(request: Request) {
   }
 
   const body = (await request.json()) as ChatRequest
-  const message = body.message?.trim()
+  const message = body.message?.trim() ?? ""
   const model = body.model?.trim() || DEFAULT_MODEL
   const mode = (body.mode?.trim() || DEFAULT_MODE) as LearningModeId
   let chatId = body.chatId?.trim() || null
+  const attachment = sanitizeAttachment(body.attachment)
 
-  if (!message) {
-    return jsonError("Message is required.", 400)
+  if (!message && !attachment) {
+    return jsonError("Message or an attached file is required.", 400)
   }
 
   if (!isAllowedModel(model)) {
@@ -93,11 +136,14 @@ export async function POST(request: Request) {
 
     await supabase.from("chats").update({ model, mode }).eq("id", chatId)
   } else {
+    const chatTitle = message
+      ? titleFromMessage(message)
+      : titleFromMessage(attachment ? `File: ${attachment.name}` : "")
     const { data: newChat, error } = await supabase
       .from("chats")
       .insert({
         user_id: user.id,
-        title: titleFromMessage(message),
+        title: chatTitle,
         model,
         mode,
       })
@@ -117,11 +163,13 @@ export async function POST(request: Request) {
 
   const activeChatId = chatId
 
+  const storedUserContent = buildUserContent(message, attachment)
+
   const { error: userMessageError } = await supabase.from("messages").insert({
     chat_id: activeChatId,
     user_id: user.id,
     role: "user",
-    content: message,
+    content: storedUserContent,
   })
 
   if (userMessageError) {
@@ -135,6 +183,34 @@ export async function POST(request: Request) {
     .order("created_at", { ascending: true })
     .limit(16)
 
+  type ChatContent = string | Array<Record<string, unknown>>
+  const conversation: Array<{ role: string; content: ChatContent }> = [
+    {
+      role: "system",
+      content: `${getModePrompt(mode)} You are Learning Universe. Keep answers study-focused, accurate, and formatted in Markdown when helpful. When the student attaches a file, read it carefully and ground your answer in its contents.`,
+    },
+    ...(previousMessages.data ?? []).map((item) => ({
+      role: item.role,
+      content: item.content as ChatContent,
+    })),
+  ]
+
+  // For image attachments, send the current turn as multimodal content so
+  // vision-capable models can actually see the picture.
+  if (attachment?.kind === "image" && attachment.content) {
+    const lastIndex = conversation.length - 1
+    const lastMessage = conversation[lastIndex]
+    if (lastMessage && lastMessage.role === "user") {
+      conversation[lastIndex] = {
+        role: "user",
+        content: [
+          { type: "text", text: typeof lastMessage.content === "string" ? lastMessage.content : message },
+          { type: "image_url", image_url: { url: attachment.content } },
+        ],
+      }
+    }
+  }
+
   const upstream = await fetch("https://openrouter.ai/api/v1/chat/completions", {
     method: "POST",
     headers: {
@@ -146,16 +222,7 @@ export async function POST(request: Request) {
     body: JSON.stringify({
       model,
       stream: true,
-      messages: [
-        {
-          role: "system",
-          content: `${getModePrompt(mode)} You are Learning Universe. Keep answers study-focused, accurate, and formatted in Markdown when helpful.`,
-        },
-        ...(previousMessages.data ?? []).map((item) => ({
-          role: item.role,
-          content: item.content,
-        })),
-      ],
+      messages: conversation,
       temperature: 0.45,
       max_tokens: 1100,
     }),
