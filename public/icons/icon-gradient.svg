@@ -1,0 +1,90 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0f0c29"/>
+      <stop offset="50%" style="stop-color:#302b63"/>
+      <stop offset="100%" style="stop-color:#24243e"/>
+    </linearGradient>
+    <linearGradient id="bookGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#a78bfa"/>
+      <stop offset="100%" style="stop-color:#6366f1"/>
+    </linearGradient>
+    <linearGradient id="pageGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffffff"/>
+      <stop offset="100%" style="stop-color:#e0e7ff"/>
+    </linearGradient>
+    <radialGradient id="orbitGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#818cf8;stop-opacity:0.4"/>
+      <stop offset="100%" style="stop-color:#818cf8;stop-opacity:0"/>
+    </radialGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="512" height="512" rx="96" fill="url(#bgGrad)"/>
+
+  <!-- Stars -->
+  <circle cx="80" cy="70" r="2" fill="white" opacity="0.8"/>
+  <circle cx="150" cy="40" r="1.5" fill="white" opacity="0.6"/>
+  <circle cx="420" cy="80" r="2" fill="white" opacity="0.9"/>
+  <circle cx="460" cy="150" r="1.5" fill="white" opacity="0.5"/>
+  <circle cx="50" cy="200" r="1" fill="white" opacity="0.7"/>
+  <circle cx="480" cy="300" r="2" fill="white" opacity="0.6"/>
+  <circle cx="100" cy="400" r="1.5" fill="white" opacity="0.4"/>
+  <circle cx="430" cy="420" r="2" fill="white" opacity="0.8"/>
+  <circle cx="60" cy="450" r="1" fill="white" opacity="0.6"/>
+  <circle cx="350" cy="50" r="1.5" fill="white" opacity="0.7"/>
+  <circle cx="200" cy="90" r="1" fill="white" opacity="0.5"/>
+  <circle cx="300" cy="460" r="1.5" fill="white" opacity="0.6"/>
+
+  <!-- Orbit ring -->
+  <ellipse cx="256" cy="256" rx="190" ry="60" fill="none" stroke="#818cf8" stroke-width="1.5" opacity="0.35" transform="rotate(-20 256 256)"/>
+
+  <!-- Small planet on orbit -->
+  <circle cx="108" cy="210" r="14" fill="#a78bfa" filter="url(#glow)" opacity="0.9"/>
+  <circle cx="108" cy="210" r="10" fill="#c4b5fd"/>
+  <circle cx="104" cy="207" r="4" fill="#ddd6fe" opacity="0.6"/>
+
+  <!-- Saturn-like planet top right -->
+  <circle cx="390" cy="150" r="22" fill="#818cf8" filter="url(#glow)" opacity="0.85"/>
+  <ellipse cx="390" cy="150" rx="34" ry="8" fill="none" stroke="#c4b5fd" stroke-width="2.5" opacity="0.7"/>
+  <circle cx="386" cy="145" r="7" fill="#a5b4fc" opacity="0.5"/>
+
+  <!-- Open Book (center) -->
+  <g transform="translate(256,270)">
+    <!-- Book shadow -->
+    <ellipse cx="0" cy="105" rx="100" ry="12" fill="#000" opacity="0.3"/>
+
+    <!-- Left page -->
+    <path d="M -15,-95 Q -80,-90 -105,90 Q -80,95 -15,90 Z" fill="url(#pageGrad)" opacity="0.95"/>
+    <!-- Left page lines -->
+    <line x1="-85" y1="-20" x2="-25" y2="-22" stroke="#6366f1" stroke-width="3" opacity="0.4" stroke-linecap="round"/>
+    <line x1="-85" y1="5" x2="-25" y2="3" stroke="#6366f1" stroke-width="3" opacity="0.4" stroke-linecap="round"/>
+    <line x1="-85" y1="30" x2="-25" y2="28" stroke="#6366f1" stroke-width="3" opacity="0.4" stroke-linecap="round"/>
+    <line x1="-85" y1="55" x2="-25" y2="53" stroke="#6366f1" stroke-width="3" opacity="0.4" stroke-linecap="round"/>
+
+    <!-- Right page -->
+    <path d="M 15,-95 Q 80,-90 105,90 Q 80,95 15,90 Z" fill="url(#pageGrad)" opacity="0.95"/>
+    <!-- Right page lines -->
+    <line x1="25" y1="-22" x2="85" y2="-20" stroke="#6366f1" stroke-width="3" opacity="0.4" stroke-linecap="round"/>
+    <line x1="25" y1="3" x2="85" y2="5" stroke="#6366f1" stroke-width="3" opacity="0.4" stroke-linecap="round"/>
+    <line x1="25" y1="28" x2="85" y2="30" stroke="#6366f1" stroke-width="3" opacity="0.4" stroke-linecap="round"/>
+    <line x1="25" y1="53" x2="85" y2="55" stroke="#6366f1" stroke-width="3" opacity="0.4" stroke-linecap="round"/>
+
+    <!-- Book spine -->
+    <path d="M -15,-95 Q 0,-100 15,-95 L 15,90 Q 0,95 -15,90 Z" fill="url(#bookGrad)"/>
+  </g>
+
+  <!-- Shooting star / magic sparkles -->
+  <g filter="url(#glow)" opacity="0.9">
+    <polygon points="256,110 261,124 275,124 264,133 268,147 256,138 244,147 248,133 237,124 251,124" fill="#fbbf24" transform="scale(0.7) translate(110,20)"/>
+  </g>
+
+  <!-- Small star sparkle -->
+  <g opacity="0.8" filter="url(#glow)">
+    <polygon points="380,320 383,329 392,329 385,334 387,343 380,338 373,343 375,334 368,329 377,329" fill="#f9a8d4" transform="scale(0.5) translate(380,300)"/>
+  </g>
+</svg>

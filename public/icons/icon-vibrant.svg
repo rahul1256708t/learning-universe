@@ -1,0 +1,102 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <radialGradient id="bgVibrant" cx="30%" cy="30%" r="80%">
+      <stop offset="0%" style="stop-color:#7c3aed"/>
+      <stop offset="60%" style="stop-color:#2563eb"/>
+      <stop offset="100%" style="stop-color:#0f172a"/>
+    </radialGradient>
+    <linearGradient id="bookTop" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#fde68a"/>
+      <stop offset="100%" style="stop-color:#f59e0b"/>
+    </linearGradient>
+    <linearGradient id="glowRing" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#c084fc"/>
+      <stop offset="50%" style="stop-color:#60a5fa"/>
+      <stop offset="100%" style="stop-color:#34d399"/>
+    </linearGradient>
+    <filter id="starGlow">
+      <feGaussianBlur stdDeviation="5" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="bookShadow">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#7c3aed" flood-opacity="0.6"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="512" height="512" rx="110" fill="url(#bgVibrant)"/>
+
+  <!-- Glowing orbit ring -->
+  <circle cx="256" cy="240" r="195" fill="none" stroke="url(#glowRing)" stroke-width="2.5" opacity="0.5" stroke-dasharray="12 8"/>
+
+  <!-- Outer ring -->
+  <circle cx="256" cy="240" r="175" fill="none" stroke="white" stroke-width="1" opacity="0.1"/>
+
+  <!-- Bright stars scattered -->
+  <circle cx="100" cy="90" r="3" fill="white" filter="url(#starGlow)" opacity="1"/>
+  <circle cx="180" cy="55" r="2" fill="#fde68a" filter="url(#starGlow)" opacity="0.9"/>
+  <circle cx="400" cy="70" r="3.5" fill="white" filter="url(#starGlow)" opacity="0.95"/>
+  <circle cx="450" cy="180" r="2" fill="#c084fc" filter="url(#starGlow)" opacity="0.9"/>
+  <circle cx="60" cy="300" r="2.5" fill="#60a5fa" filter="url(#starGlow)" opacity="0.8"/>
+  <circle cx="470" cy="350" r="2" fill="white" filter="url(#starGlow)" opacity="0.7"/>
+  <circle cx="90" cy="430" r="3" fill="#fde68a" filter="url(#starGlow)" opacity="0.8"/>
+  <circle cx="440" cy="440" r="2.5" fill="#34d399" filter="url(#starGlow)" opacity="0.8"/>
+
+  <!-- Planet top left -->
+  <circle cx="115" cy="155" r="28" fill="#7c3aed" filter="url(#starGlow)"/>
+  <circle cx="115" cy="155" r="20" fill="#a855f7"/>
+  <ellipse cx="115" cy="155" rx="42" ry="10" fill="none" stroke="#e879f9" stroke-width="2.5" opacity="0.7"/>
+  <circle cx="108" cy="149" r="7" fill="#c084fc" opacity="0.5"/>
+
+  <!-- Planet bottom right small -->
+  <circle cx="390" cy="370" r="18" fill="#1d4ed8"/>
+  <circle cx="390" cy="370" r="13" fill="#3b82f6"/>
+  <circle cx="386" cy="365" r="5" fill="#93c5fd" opacity="0.6"/>
+
+  <!-- Comet -->
+  <line x1="320" y1="90" x2="380" y2="70" stroke="white" stroke-width="2" opacity="0.5" stroke-linecap="round"/>
+  <line x1="322" y1="95" x2="370" y2="78" stroke="white" stroke-width="1" opacity="0.3" stroke-linecap="round"/>
+  <circle cx="318" cy="88" r="4" fill="white" filter="url(#starGlow)"/>
+
+  <!-- BOOK - open, large, centered -->
+  <g transform="translate(256, 255)" filter="url(#bookShadow)">
+    <!-- Left page bg -->
+    <path d="M -12,-100 Q -115,-95 -120,95 L -12,100 Z" fill="#1e1b4b"/>
+    <!-- Left page content -->
+    <path d="M -14,-98 Q -112,-93 -117,93 L -14,98 Z" fill="#ede9fe"/>
+    <!-- Left page lines -->
+    <line x1="-100" y1="-45" x2="-22" y2="-48" stroke="#7c3aed" stroke-width="3" opacity="0.5" stroke-linecap="round"/>
+    <line x1="-100" y1="-18" x2="-22" y2="-21" stroke="#7c3aed" stroke-width="3" opacity="0.5" stroke-linecap="round"/>
+    <line x1="-100" y1="9" x2="-22" y2="6" stroke="#7c3aed" stroke-width="3" opacity="0.5" stroke-linecap="round"/>
+    <line x1="-100" y1="36" x2="-22" y2="33" stroke="#7c3aed" stroke-width="3" opacity="0.5" stroke-linecap="round"/>
+    <line x1="-100" y1="60" x2="-55" y2="57" stroke="#7c3aed" stroke-width="3" opacity="0.35" stroke-linecap="round"/>
+
+    <!-- Star on left page -->
+    <polygon points="-65,-68 -62,-57 -51,-57 -59,-50 -56,-39 -65,-46 -74,-39 -71,-50 -79,-57 -68,-57" fill="#f59e0b" opacity="0.7"/>
+
+    <!-- Right page bg -->
+    <path d="M 12,-100 Q 115,-95 120,95 L 12,100 Z" fill="#1e1b4b"/>
+    <!-- Right page content -->
+    <path d="M 14,-98 Q 112,-93 117,93 L 14,98 Z" fill="#f0f9ff"/>
+    <!-- Right page lines -->
+    <line x1="22" y1="-48" x2="100" y2="-45" stroke="#2563eb" stroke-width="3" opacity="0.5" stroke-linecap="round"/>
+    <line x1="22" y1="-21" x2="100" y2="-18" stroke="#2563eb" stroke-width="3" opacity="0.5" stroke-linecap="round"/>
+    <line x1="22" y1="6" x2="100" y2="9" stroke="#2563eb" stroke-width="3" opacity="0.5" stroke-linecap="round"/>
+    <line x1="22" y1="33" x2="100" y2="36" stroke="#2563eb" stroke-width="3" opacity="0.5" stroke-linecap="round"/>
+    <line x1="22" y1="57" x2="65" y2="60" stroke="#2563eb" stroke-width="3" opacity="0.35" stroke-linecap="round"/>
+
+    <!-- Planet on right page -->
+    <circle cx="68" cy="-58" r="14" fill="#3b82f6" opacity="0.6"/>
+    <ellipse cx="68" cy="-58" rx="20" ry="5" fill="none" stroke="#60a5fa" stroke-width="1.5" opacity="0.5"/>
+
+    <!-- Spine glow -->
+    <rect x="-12" y="-100" width="24" height="200" fill="url(#glowRing)" rx="4" opacity="0.9"/>
+
+    <!-- Spine highlight -->
+    <rect x="-4" y="-100" width="8" height="200" fill="white" rx="2" opacity="0.2"/>
+  </g>
+
+  <!-- "LU" monogram badge at bottom -->
+  <rect x="196" y="400" width="120" height="52" rx="26" fill="url(#glowRing)" opacity="0.9"/>
+  <text x="256" y="435" font-family="Arial Black, sans-serif" font-size="26" font-weight="900" fill="white" text-anchor="middle" letter-spacing="6">LU</text>
+</svg>

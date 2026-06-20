@@ -32,6 +32,27 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
+import { FlashcardPanel } from "@/components/flashcard-panel"
+
+/* ── Mode icons ─────────────────────────────────────────────── */
+const MODE_ICONS: Record<string, string> = {
+  tutor: "🎓",
+  homework: "📝",
+  notes: "📋",
+  quiz: "❓",
+  "exam-prep": "🏆",
+  eli5: "🧸",
+  formula: "🔬",
+  ncert: "📚",
+}
+
+/* ── Vision-capable models ──────────────────────────────────── */
+const VISION_MODELS = new Set([
+  "openai/gpt-4o",
+  "openai/gpt-4o-mini",
+  "google/gemini-2.0-flash-001",
+  "anthropic/claude-3.5-sonnet",
+])
 
 type ChatWorkspaceProps = {
   chat: Chat | null
@@ -47,8 +68,7 @@ type Attachment = {
   content: string
 }
 
-// Files larger than this are rejected before reading to keep requests light.
-const MAX_FILE_BYTES = 5 * 1024 * 1024 // 5MB
+const MAX_FILE_BYTES = 5 * 1024 * 1024 // 5 MB
 const ACCEPTED_FILE_TYPES =
   ".txt,.md,.markdown,.csv,.json,.html,.css,.js,.jsx,.ts,.tsx,.py,.java,.c,.cpp,.cs,.go,.rb,.php,.sql,.yml,.yaml,.xml,.log,text/*,image/*"
 
@@ -97,9 +117,14 @@ export function ChatWorkspace({ chat, messages: initialMessages, hasOpenRouter }
     []
   )
 
+  /* Last AI message for flashcard generation */
+  const lastAiContent = useMemo(() => {
+    const aiMessages = messages.filter((m) => m.role === "assistant")
+    return aiMessages[aiMessages.length - 1]?.content ?? ""
+  }, [messages])
+
   async function handleFileSelected(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0]
-    // Reset the input so selecting the same file again still fires onChange.
     event.target.value = ""
     if (!file) return
 
@@ -109,12 +134,18 @@ export function ChatWorkspace({ chat, messages: initialMessages, hasOpenRouter }
     }
 
     const isImage = file.type.startsWith("image/")
+
+    if (isImage && !VISION_MODELS.has(model)) {
+      toast.error("Switch to GPT-4o, Gemini 2.0 Flash, or Claude to attach images.")
+      return
+    }
+
     setIsReadingFile(true)
     try {
       const content = isImage ? await readFileAsDataUrl(file) : await readFileAsText(file)
       setAttachment({
         name: file.name,
-        type: file.type || (isImage ? "image" : "text/plain"),
+        type: file.type || (isImage ? "image/png" : "text/plain"),
         size: file.size,
         kind: isImage ? "image" : "text",
         content,
@@ -186,9 +217,7 @@ export function ChatWorkspace({ chat, messages: initialMessages, hasOpenRouter }
         }
 
         const nextChatId = response.headers.get("x-chat-id")
-        if (nextChatId) {
-          setChatId(nextChatId)
-        }
+        if (nextChatId) setChatId(nextChatId)
 
         const reader = response.body.getReader()
         const decoder = new TextDecoder()
@@ -197,8 +226,7 @@ export function ChatWorkspace({ chat, messages: initialMessages, hasOpenRouter }
         while (true) {
           const { value, done } = await reader.read()
           if (done) break
-          const chunk = decoder.decode(value, { stream: true })
-          answer += chunk
+          answer += decoder.decode(value, { stream: true })
           setStreamingAnswer(answer)
         }
 
@@ -216,8 +244,8 @@ export function ChatWorkspace({ chat, messages: initialMessages, hasOpenRouter }
         setStreamingAnswer("")
         toast.success("Chat saved automatically.")
       } catch (error) {
-        const message = error instanceof Error ? error.message : "Something went wrong."
-        toast.error(message)
+        const msg = error instanceof Error ? error.message : "Something went wrong."
+        toast.error(msg)
       }
     })
   }
@@ -233,9 +261,17 @@ export function ChatWorkspace({ chat, messages: initialMessages, hasOpenRouter }
     window.location.href = "/dashboard/chat"
   }
 
+  function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
+    if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+      e.preventDefault()
+      submitMessage()
+    }
+  }
+
   return (
     <div className="grid min-h-[calc(100vh-2rem)] gap-4 lg:grid-cols-[minmax(0,1fr)_300px]">
-      {/* ── Main chat card ─────────────────────────── */}
+
+      {/* ── Main chat card ─────────────────────────────── */}
       <Card className="min-h-[720px] border-white/10 bg-black/40 shadow-2xl shadow-black/40 backdrop-blur-xl">
         <CardHeader className="border-b border-white/8">
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
@@ -291,7 +327,7 @@ export function ChatWorkspace({ chat, messages: initialMessages, hasOpenRouter }
                 <SelectGroup>
                   {OPENROUTER_MODELS.map((item) => (
                     <SelectItem key={item.id} value={item.id}>
-                      {item.name}
+                      {item.name}{VISION_MODELS.has(item.id) ? " 👁" : ""}
                     </SelectItem>
                   ))}
                 </SelectGroup>
@@ -305,7 +341,7 @@ export function ChatWorkspace({ chat, messages: initialMessages, hasOpenRouter }
                 <SelectGroup>
                   {LEARNING_MODES.map((item) => (
                     <SelectItem key={item.id} value={item.id}>
-                      {item.name}
+                      {MODE_ICONS[item.id]} {item.name}
                     </SelectItem>
                   ))}
                 </SelectGroup>
@@ -352,7 +388,8 @@ export function ChatWorkspace({ chat, messages: initialMessages, hasOpenRouter }
             <Textarea
               value={input}
               onChange={(event) => setInput(event.target.value)}
-              placeholder="Ask a study question, paste homework, attach a file, or generate a quiz..."
+              onKeyDown={handleKeyDown}
+              placeholder="Ask a study question, paste homework, attach a file, or generate a quiz… (Ctrl+Enter to send)"
               className="min-h-28 resize-none rounded-lg border-white/8 bg-black/20 text-[#D7E2EA] placeholder:text-[#D7E2EA]/25"
             />
 
@@ -364,10 +401,11 @@ export function ChatWorkspace({ chat, messages: initialMessages, hasOpenRouter }
               className="hidden"
             />
 
+            {/* Attachment preview */}
             {attachment ? (
               <div className="mt-3 flex items-center gap-3 rounded-lg border border-white/10 bg-black/30 px-3 py-2">
                 {attachment.kind === "image" ? (
-                  /* eslint-disable-next-line @next/next/no-img-element */
+                  // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={attachment.content}
                     alt={attachment.name}
@@ -418,7 +456,7 @@ export function ChatWorkspace({ chat, messages: initialMessages, hasOpenRouter }
                   {getModelName(model)}
                 </Badge>
                 <Badge variant="secondary" className="font-heading text-[10px] uppercase tracking-wider">
-                  {getModeName(mode)}
+                  {MODE_ICONS[mode]} {getModeName(mode)}
                 </Badge>
               </div>
               <button
@@ -443,16 +481,15 @@ export function ChatWorkspace({ chat, messages: initialMessages, hasOpenRouter }
         </CardContent>
       </Card>
 
-      {/* ── Mode selector sidebar ───────────────────── */}
+      {/* ── Right sidebar ──────────────────────────────── */}
       <aside className="flex flex-col gap-4">
+
+        {/* Mode selector */}
         <div className="rounded-2xl border border-white/10 bg-black/40 p-5 backdrop-blur-xl">
-          <p className="mb-4 font-heading text-xs font-medium uppercase tracking-[0.2em] text-[#D7E2EA]/45">
-            Mode Selector
+          <p className="mb-3 font-heading text-xs font-medium uppercase tracking-[0.2em] text-[#D7E2EA]/45">
+            Study Mode
           </p>
-          <p className="mb-4 text-xs text-[#D7E2EA]/35">
-            Each mode sends a different system prompt.
-          </p>
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-1.5">
             {LEARNING_MODES.map((item) => (
               <button
                 key={item.id}
@@ -460,12 +497,12 @@ export function ChatWorkspace({ chat, messages: initialMessages, hasOpenRouter }
                 onClick={() => setMode(item.id)}
                 className={`rounded-xl border p-3 text-left text-sm transition-all duration-150 ${
                   mode === item.id
-                    ? "border-[#D7E2EA]/25 bg-[#D7E2EA]/8"
+                    ? "border-purple-500/40 bg-purple-500/15"
                     : "border-white/8 bg-white/[0.03] hover:bg-white/[0.06]"
                 }`}
               >
                 <span className="block font-heading text-xs font-medium uppercase tracking-wider text-[#D7E2EA]/80">
-                  {item.name}
+                  {MODE_ICONS[item.id]} {item.name}
                 </span>
                 <span className="mt-1 block text-xs leading-5 text-[#D7E2EA]/40">
                   {item.description}
@@ -474,6 +511,14 @@ export function ChatWorkspace({ chat, messages: initialMessages, hasOpenRouter }
             ))}
           </div>
         </div>
+
+        {/* Flashcard panel */}
+        <FlashcardPanel
+          lastAiContent={lastAiContent}
+          model={model}
+          chatId={chatId}
+        />
+
       </aside>
     </div>
   )

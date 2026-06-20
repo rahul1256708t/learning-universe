@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bg2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1e1b4b"/>
+      <stop offset="100%" style="stop-color:#312e81"/>
+    </linearGradient>
+    <linearGradient id="accentLine" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#a78bfa"/>
+      <stop offset="100%" style="stop-color:#38bdf8"/>
+    </linearGradient>
+    <filter id="softGlow">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background rounded square -->
+  <rect width="512" height="512" rx="100" fill="url(#bg2)"/>
+
+  <!-- Subtle grid lines -->
+  <line x1="128" y1="0" x2="128" y2="512" stroke="white" stroke-width="0.5" opacity="0.05"/>
+  <line x1="256" y1="0" x2="256" y2="512" stroke="white" stroke-width="0.5" opacity="0.05"/>
+  <line x1="384" y1="0" x2="384" y2="512" stroke="white" stroke-width="0.5" opacity="0.05"/>
+  <line x1="0" y1="128" x2="512" y2="128" stroke="white" stroke-width="0.5" opacity="0.05"/>
+  <line x1="0" y1="256" x2="512" y2="256" stroke="white" stroke-width="0.5" opacity="0.05"/>
+  <line x1="0" y1="384" x2="512" y2="384" stroke="white" stroke-width="0.5" opacity="0.05"/>
+
+  <!-- Universe circle -->
+  <circle cx="256" cy="220" r="140" fill="none" stroke="url(#accentLine)" stroke-width="2" opacity="0.5"/>
+  <circle cx="256" cy="220" r="110" fill="none" stroke="url(#accentLine)" stroke-width="1" opacity="0.3"/>
+
+  <!-- Stars inside circle -->
+  <circle cx="200" cy="160" r="2.5" fill="#a78bfa" opacity="0.9" filter="url(#softGlow)"/>
+  <circle cx="310" cy="150" r="2" fill="#38bdf8" opacity="0.9" filter="url(#softGlow)"/>
+  <circle cx="170" cy="230" r="1.5" fill="white" opacity="0.7"/>
+  <circle cx="340" cy="240" r="2" fill="#a78bfa" opacity="0.8"/>
+  <circle cx="256" cy="140" r="1.5" fill="white" opacity="0.6"/>
+
+  <!-- Book open, clean minimal style -->
+  <g transform="translate(256, 235)">
+    <!-- Left cover -->
+    <path d="M-10,-80 L-110,-75 L-110,75 L-10,80 Z" rx="4" fill="#4338ca" stroke="#a78bfa" stroke-width="2"/>
+    <!-- Right cover -->
+    <path d="M10,-80 L110,-75 L110,75 L10,80 Z" fill="#3730a3" stroke="#818cf8" stroke-width="2"/>
+    <!-- Left page -->
+    <path d="M-10,-80 L-100,-74 L-100,74 L-10,80 Z" fill="#e0e7ff" opacity="0.9"/>
+    <!-- Right page -->
+    <path d="M10,-80 L100,-74 L100,74 L10,80 Z" fill="#eef2ff" opacity="0.9"/>
+    <!-- Spine -->
+    <rect x="-10" y="-80" width="20" height="160" fill="url(#accentLine)" rx="2"/>
+
+    <!-- Lines on left page -->
+    <line x1="-90" y1="-40" x2="-18" y2="-40" stroke="#818cf8" stroke-width="2.5" opacity="0.5" stroke-linecap="round"/>
+    <line x1="-90" y1="-18" x2="-18" y2="-18" stroke="#818cf8" stroke-width="2.5" opacity="0.5" stroke-linecap="round"/>
+    <line x1="-90" y1="4" x2="-18" y2="4" stroke="#818cf8" stroke-width="2.5" opacity="0.5" stroke-linecap="round"/>
+    <line x1="-90" y1="26" x2="-50" y2="26" stroke="#818cf8" stroke-width="2.5" opacity="0.35" stroke-linecap="round"/>
+    <!-- Lines on right page -->
+    <line x1="18" y1="-40" x2="90" y2="-40" stroke="#818cf8" stroke-width="2.5" opacity="0.5" stroke-linecap="round"/>
+    <line x1="18" y1="-18" x2="90" y2="-18" stroke="#818cf8" stroke-width="2.5" opacity="0.5" stroke-linecap="round"/>
+    <line x1="18" y1="4" x2="90" y2="4" stroke="#818cf8" stroke-width="2.5" opacity="0.5" stroke-linecap="round"/>
+    <line x1="18" y1="26" x2="60" y2="26" stroke="#818cf8" stroke-width="2.5" opacity="0.35" stroke-linecap="round"/>
+  </g>
+
+  <!-- "LU" text below book -->
+  <text x="256" y="395" font-family="Georgia, serif" font-size="42" font-weight="700" fill="white" text-anchor="middle" opacity="0.9" letter-spacing="8">LU</text>
+
+  <!-- Accent dots -->
+  <circle cx="156" cy="395" r="4" fill="url(#accentLine)" opacity="0.7"/>
+  <circle cx="356" cy="395" r="4" fill="url(#accentLine)" opacity="0.7"/>
+
+  <!-- Corner decorations -->
+  <circle cx="80" cy="80" r="20" fill="none" stroke="#a78bfa" stroke-width="1.5" opacity="0.3"/>
+  <circle cx="432" cy="80" r="20" fill="none" stroke="#38bdf8" stroke-width="1.5" opacity="0.3"/>
+</svg>
