@@ -235,7 +235,7 @@ export default function LandingPage() {
           </FI>
 
           <FI delay={0.4} className="mt-16">
-            <p className="font-heading text-xs font-medium uppercase tracking-[0.25em] text-[#D7E2EA]/30">
+            <p className="owner-title font-heading text-2xl font-black uppercase tracking-[0.35em] drop-shadow-[0_0_28px_rgba(244,114,182,0.85)]">
               Owner: Rahul Gupta
             </p>
           </FI>
