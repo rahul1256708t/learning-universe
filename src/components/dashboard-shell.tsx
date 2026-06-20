@@ -14,6 +14,7 @@ import {
 
 import { signOut } from "@/app/auth/actions"
 import { AppBackground } from "@/components/app-background"
+import { ClearHistoryButton } from "@/components/clear-history-button"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -164,6 +165,7 @@ export async function DashboardShell({ children }: DashboardShellProps) {
                 </p>
               )}
             </div>
+            {chats?.length ? <ClearHistoryButton /> : null}
           </section>
         </aside>
 
