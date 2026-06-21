@@ -225,6 +225,10 @@ export async function POST(request: Request) {
       messages: conversation,
       temperature: 0.45,
       max_tokens: 1100,
+      // Enable web search for Hermes models so they can look up live information
+      ...(model.startsWith("nousresearch/hermes") && {
+        plugins: [{ id: "web", max_results: 5 }],
+      }),
     }),
   })
 

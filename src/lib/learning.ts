@@ -32,15 +32,15 @@ export const OPENROUTER_MODELS: OpenRouterModel[] = [
   },
   {
     id: "nousresearch/hermes-3-llama-3.1-70b",
-    name: "Hermes 3 (70B)",
-    orbit: "Deep reasoning agent",
-    strength: "Excellent at structured thinking, step-by-step problem solving, and following complex study instructions.",
+    name: "Hermes 3 (70B) 🌐",
+    orbit: "Deep reasoning agent + web search",
+    strength: "Searches the web for live info, plus structured thinking, step-by-step problem solving, and complex study instructions.",
   },
   {
     id: "nousresearch/hermes-2-pro-llama-3-8b",
-    name: "Hermes 2 Pro (8B)",
-    orbit: "Fast agent",
-    strength: "Great for quick answers, function-calling style responses, and lightweight study tasks.",
+    name: "Hermes 2 Pro (8B) 🌐",
+    orbit: "Fast agent + web search",
+    strength: "Searches the web for live info, quick answers, function-calling style responses, and lightweight study tasks.",
   },
   {
     id: "openai/gpt-4o",
