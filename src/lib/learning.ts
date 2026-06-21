@@ -31,6 +31,18 @@ export const OPENROUTER_MODELS: OpenRouterModel[] = [
     strength: "Quick explanations, outlines, and everyday study help.",
   },
   {
+    id: "nousresearch/hermes-3-llama-3.1-70b",
+    name: "Hermes 3 (70B)",
+    orbit: "Deep reasoning agent",
+    strength: "Excellent at structured thinking, step-by-step problem solving, and following complex study instructions.",
+  },
+  {
+    id: "nousresearch/hermes-2-pro-llama-3-8b",
+    name: "Hermes 2 Pro (8B)",
+    orbit: "Fast agent",
+    strength: "Great for quick answers, function-calling style responses, and lightweight study tasks.",
+  },
+  {
     id: "openai/gpt-4o",
     name: "GPT-4o",
     orbit: "Advanced reasoning",
