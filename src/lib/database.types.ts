@@ -1,5 +1,3 @@
-import type { LearningModeId } from "@/lib/learning"
-
 export type Profile = {
   id: string
   full_name: string | null
@@ -11,7 +9,8 @@ export type Chat = {
   user_id: string
   title: string
   model: string
-  mode: LearningModeId
+  // Holds either a legacy LearningModeId or a ResearchModeId — stored as text.
+  mode: string
   created_at: string
 }
 
@@ -29,6 +28,32 @@ export type UsageLog = {
   user_id: string
   model: string
   tokens_used: number
+  created_at: string
+}
+
+export type ResearchLog = {
+  id: string
+  user_id: string
+  chat_id: string | null
+  question: string
+  answer: string
+  sources: unknown
+  model: string
+  mode: string
+  question_type: string | null
+  research_used: boolean
+  confidence: number
+  created_at: string
+}
+
+export type ResearchMemory = {
+  id: string
+  user_id: string
+  topic: string
+  summary: string
+  source_urls: unknown
+  mode: string | null
+  embedding: number[] | null
   created_at: string
 }
 
@@ -54,13 +79,13 @@ export type Database = {
           user_id: string
           title: string
           model: string
-          mode: LearningModeId
+          mode: string
           created_at?: string
         }
         Update: {
           title?: string
           model?: string
-          mode?: LearningModeId
+          mode?: string
         }
         Relationships: []
       }
@@ -91,9 +116,52 @@ export type Database = {
         Update: never
         Relationships: []
       }
+      research_logs: {
+        Row: ResearchLog
+        Insert: {
+          id?: string
+          user_id: string
+          chat_id?: string | null
+          question: string
+          answer: string
+          sources?: unknown
+          model: string
+          mode: string
+          question_type?: string | null
+          research_used?: boolean
+          confidence?: number
+          created_at?: string
+        }
+        Update: never
+        Relationships: []
+      }
+      research_memory: {
+        Row: ResearchMemory
+        Insert: {
+          id?: string
+          user_id: string
+          topic: string
+          summary: string
+          source_urls?: unknown
+          mode?: string | null
+          embedding?: number[] | null
+          created_at?: string
+        }
+        Update: never
+        Relationships: []
+      }
     }
     Views: Record<string, never>
-    Functions: Record<string, never>
+    Functions: {
+      match_research_memory: {
+        Args: {
+          query_embedding: number[]
+          match_count: number
+          match_user: string
+        }
+        Returns: Array<{ id: string; topic: string; summary: string; similarity: number }>
+      }
+    }
     Enums: Record<string, never>
     CompositeTypes: Record<string, never>
   }

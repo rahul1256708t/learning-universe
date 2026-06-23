@@ -6,8 +6,8 @@ import {
   HistoryIcon,
   InfoIcon,
   LogOutIcon,
-  MessageSquareIcon,
   RocketIcon,
+  SatelliteDishIcon,
   SettingsIcon,
   TrendingUpIcon,
   UserRoundIcon,
@@ -27,7 +27,7 @@ type DashboardShellProps = {
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: BookOpenIcon },
-  { href: "/dashboard/chat", label: "Chat", icon: MessageSquareIcon },
+  { href: "/dashboard/chat", label: "Research Agent", icon: SatelliteDishIcon },
   { href: "/dashboard/progress", label: "Progress", icon: TrendingUpIcon },
   { href: "/dashboard/models", label: "Models", icon: BrainCircuitIcon },
   { href: "/dashboard/profile", label: "Profile", icon: UserRoundIcon },

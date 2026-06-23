@@ -141,7 +141,7 @@ function AppMockup() {
               <div className="size-5 rounded bg-[#D7E2EA]/10" />
               <div className="h-2 w-16 rounded bg-[#D7E2EA]/20" />
             </div>
-            {["AI Tutor", "Quiz Mode", "Notes", "Exam Prep", "Formula"].map((m, i) => (
+            {["Fast Research", "Deep Research", "NCERT", "Exam", "Coding"].map((m, i) => (
               <div
                 key={m}
                 className={`rounded-lg border px-2 py-1.5 ${
@@ -263,15 +263,15 @@ const NAV_LINKS = [
 const CAPABILITIES = [
   {
     number: "01",
-    name: "AI Tutor Chat",
+    name: "AI Research Agent",
     description:
-      "Stream real-time answers from top OpenRouter models. Ask follow-ups, paste homework, and save every session automatically to your account.",
+      "Not a chatbot — a research agent. It classifies your question, searches the web, reads trusted sources, verifies the facts, then answers with inline citations and a confidence score.",
   },
   {
     number: "02",
-    name: "Study Modes",
+    name: "Research Modes",
     description:
-      "8 pre-built system prompts — tutor, quiz generator, notes, exam prep, formula helper, and more — each tailored to a specific learning workflow.",
+      "Six tuned modes — Fast Research, Deep Research, NCERT, Exam, Coding Research, and Step-by-Step Tutor — each shaping how deeply the agent searches and how it writes the answer.",
   },
   {
     number: "03",

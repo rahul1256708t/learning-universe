@@ -1,10 +1,11 @@
-import { ChatWorkspace } from "@/components/chat-workspace"
+import { ResearchAgent } from "@/components/research-agent"
 import type { Chat, Message } from "@/lib/database.types"
 import { createClient } from "@/lib/supabase/server"
+import { hasTavily } from "@/lib/research/tavily"
 
 type SearchParams = Promise<{ chatId?: string }>
 
-export default async function ChatPage({ searchParams }: { searchParams: SearchParams }) {
+export default async function ResearchPage({ searchParams }: { searchParams: SearchParams }) {
   const params = await searchParams
   const supabase = await createClient()
   let chat: Chat | null = null
@@ -31,10 +32,11 @@ export default async function ChatPage({ searchParams }: { searchParams: SearchP
   }
 
   return (
-    <ChatWorkspace
+    <ResearchAgent
       chat={chat}
       messages={messages}
       hasOpenRouter={Boolean(process.env.OPENROUTER_API_KEY)}
+      hasTavily={hasTavily()}
     />
   )
 }

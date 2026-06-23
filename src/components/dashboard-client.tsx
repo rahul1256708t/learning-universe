@@ -150,8 +150,8 @@ export function DashboardClient({ chatCount, messageCount, recentChats, chatDate
           {
             href: "/dashboard/chat",
             Icon: MessageSquareIcon,
-            title: "Open Chat",
-            text: "Ask, stream, save, and review AI answers.",
+            title: "Open Research Agent",
+            text: "Ask a question — it searches, verifies, and cites sources.",
           },
           {
             href: "/dashboard/profile",
