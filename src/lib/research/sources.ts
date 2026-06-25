@@ -1,5 +1,6 @@
 import type { Confidence, Source } from "@/lib/research/types"
-import { isTrustedDomain, tavilySearch, type TavilySearchResult } from "@/lib/research/tavily"
+import { isTrustedDomain } from "@/lib/research/trust"
+import { webSearch, type SearchResult } from "@/lib/search/search-provider"
 import { getResearchMode } from "@/lib/research/modes"
 
 /**
@@ -27,7 +28,7 @@ export async function gatherSources(
 
   const searches = await Promise.all(
     queries.map((q) =>
-      tavilySearch(q, {
+      webSearch(q, {
         depth: mode.searchDepth,
         maxResults: mode.maxSources,
         includeDomains,
@@ -38,7 +39,7 @@ export async function gatherSources(
   const merged: Source[] = []
   const seen = new Set<string>()
 
-  for (const search of searches as TavilySearchResult[]) {
+  for (const search of searches as SearchResult[]) {
     if (search.error) errors.push(search.error)
     if (search.quickAnswer) quickAnswers.push(search.quickAnswer)
 

@@ -39,6 +39,10 @@ export function hasTavily(): boolean {
 /**
  * Run a single Tavily search. `depth` "advanced" reads more thoroughly.
  * Education/coding domains can be boosted by passing includeDomains.
+ *
+ * The API key is resolved by the caller (the search-provider abstraction) and
+ * passed in via options.apiKey; it falls back to TAVILY_API_KEY for callers
+ * that use Tavily directly. The key is read server-side only.
  */
 export async function tavilySearch(
   query: string,
@@ -46,11 +50,12 @@ export async function tavilySearch(
     depth?: "basic" | "advanced"
     maxResults?: number
     includeDomains?: string[]
+    apiKey?: string
   } = {}
 ): Promise<TavilySearchResult> {
-  const apiKey = process.env.TAVILY_API_KEY
+  const apiKey = options.apiKey ?? process.env.TAVILY_API_KEY
   if (!apiKey) {
-    return { results: [], error: "TAVILY_API_KEY is not configured on the server." }
+    return { results: [], error: "Search API key is not configured on the server." }
   }
 
   const { depth = "basic", maxResults = 5, includeDomains } = options

@@ -93,7 +93,7 @@ export default async function ProgressPage() {
   let chatCount = 0
   let messageCount = 0
   let chatDates: string[] = []
-  let modeCounts: Record<string, number> = {}
+  const modeCounts: Record<string, number> = {}
   let totalTokens = 0
 
   if (supabase) {

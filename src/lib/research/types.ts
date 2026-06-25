@@ -15,6 +15,10 @@ export type ResearchModeId =
   | "exam"
   | "coding"
   | "tutor"
+  | "notes"
+  | "quiz"
+  | "formula"
+  | "homework"
 
 /* ── How the agent classifies an incoming question ──────────────── */
 export type QuestionType =

@@ -1,7 +1,7 @@
 import { ResearchAgent } from "@/components/research-agent"
 import type { Chat, Message } from "@/lib/database.types"
 import { createClient } from "@/lib/supabase/server"
-import { hasTavily } from "@/lib/research/tavily"
+import { hasSearch, searchProviderName } from "@/lib/search/search-provider"
 
 type SearchParams = Promise<{ chatId?: string }>
 
@@ -36,7 +36,8 @@ export default async function ResearchPage({ searchParams }: { searchParams: Sea
       chat={chat}
       messages={messages}
       hasOpenRouter={Boolean(process.env.OPENROUTER_API_KEY)}
-      hasTavily={hasTavily()}
+      hasSearch={hasSearch()}
+      searchProvider={searchProviderName()}
     />
   )
 }

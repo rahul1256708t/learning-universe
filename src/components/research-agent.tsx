@@ -55,8 +55,21 @@ type ResearchAgentProps = {
   chat: Chat | null
   messages: Message[]
   hasOpenRouter: boolean
-  hasTavily: boolean
+  hasSearch: boolean
+  searchProvider: string
 }
+
+/* Quick follow-ups offered under a finished answer, per the product spec. */
+type NextAction = { label: string; mode: ResearchModeId | null; prompt: (q: string) => string }
+
+const NEXT_ACTIONS: NextAction[] = [
+  { label: "📝 Make short notes", mode: "notes", prompt: (q) => `Make short revision notes on: ${q}` },
+  { label: "❓ Generate quiz", mode: "quiz", prompt: (q) => `Generate a practice quiz on: ${q}` },
+  { label: "🧒 Explain like class 10", mode: "tutor", prompt: (q) => `Explain this for a class 10 student: ${q}` },
+  { label: "🏆 Board-style answer", mode: "exam", prompt: (q) => `Give a board-exam-style answer for: ${q}` },
+  { label: "🃏 Create flashcards", mode: "notes", prompt: (q) => `Create flashcards (question → answer pairs) for: ${q}` },
+  { label: "➕ Solve similar questions", mode: "homework", prompt: (q) => `Give and solve 3 similar practice questions for: ${q}` },
+]
 
 const TYPE_LABEL: Record<string, string> = {
   "school-doubt": "School doubt",
@@ -66,7 +79,7 @@ const TYPE_LABEL: Record<string, string> = {
   "deep-research": "Deep research",
 }
 
-export function ResearchAgent({ chat, messages, hasOpenRouter, hasTavily }: ResearchAgentProps) {
+export function ResearchAgent({ chat, messages, hasOpenRouter, hasSearch, searchProvider }: ResearchAgentProps) {
   const [chatId, setChatId] = useState(chat?.id ?? null)
   const [mode, setMode] = useState<ResearchModeId>((chat?.mode as ResearchModeId) ?? DEFAULT_RESEARCH_MODE)
   const [model, setModel] = useState(chat?.model && AGENT_MODELS.some((m) => m.id === chat.model) ? chat.model : DEFAULT_AGENT_MODEL)
@@ -232,6 +245,15 @@ export function ResearchAgent({ chat, messages, hasOpenRouter, hasTavily }: Rese
     })
   }
 
+  /* A "next action" chip preloads the composer with a follow-up and switches
+     to the most useful mode, so the student can launch it in one tap. */
+  function applyNextAction(action: NextAction, question: string) {
+    if (action.mode) setMode(action.mode)
+    setInput(action.prompt(question))
+    toast.info("Loaded a follow-up — press Start research.")
+    queueMicrotask(() => scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight }))
+  }
+
   async function deleteCurrentChat() {
     if (!chatId) return
     const response = await fetch(`/api/chats/${chatId}`, { method: "DELETE" })
@@ -301,10 +323,11 @@ export function ResearchAgent({ chat, messages, hasOpenRouter, hasTavily }: Rese
               Add <code className="font-mono">OPENROUTER_API_KEY</code> on the server to enable the agent.
             </Notice>
           ) : null}
-          {hasOpenRouter && !hasTavily ? (
+          {hasOpenRouter && !hasSearch ? (
             <Notice tone="cyan">
-              Add <code className="font-mono">TAVILY_API_KEY</code> to enable live web research. Without it the
-              agent still answers, but marks its confidence down and can&apos;t cite sources.
+              Research search API is not configured. Add <code className="font-mono">SEARCH_API_KEY</code>{" "}
+              (provider: <span className="font-mono">{searchProvider}</span>) to enable live web research.
+              Without it the agent still answers, but marks its confidence down and can&apos;t cite sources.
             </Notice>
           ) : null}
 
@@ -348,7 +371,7 @@ export function ResearchAgent({ chat, messages, hasOpenRouter, hasTavily }: Rese
               ) : null}
 
               {turns.map((turn) => (
-                <TurnView key={turn.id} turn={turn} />
+                <TurnView key={turn.id} turn={turn} onNextAction={applyNextAction} />
               ))}
 
               {/* Live run */}
@@ -454,11 +477,32 @@ export function ResearchAgent({ chat, messages, hasOpenRouter, hasTavily }: Rese
 
 /* ── Sub-components ─────────────────────────────────────── */
 
-function TurnView({ turn }: { turn: ResearchTurn }) {
+function TurnView({
+  turn,
+  onNextAction,
+}: {
+  turn: ResearchTurn
+  onNextAction: (action: NextAction, question: string) => void
+}) {
+  // Only show research-status badges for turns produced this session (the ones
+  // that carry a classification). Seeded history has no evidence to report.
+  const researched = turn.classification?.researchRequired ?? null
+
   return (
     <div className="flex flex-col gap-3">
       <QuestionBubble text={turn.question} classification={turn.classification} />
       <AnswerBlock content={turn.answer} modelUsed={turn.modelUsed} />
+
+      {researched !== null ? (
+        <div className="flex flex-wrap items-center gap-2">
+          <AnswerBadge tone={researched ? "fuchsia" : "slate"}>
+            {researched ? "🔬 Research Used" : "⚡ Direct Answer"}
+          </AnswerBadge>
+          {turn.sources.length > 0 ? (
+            <AnswerBadge tone="emerald">✓ Sources Verified ({turn.sources.length})</AnswerBadge>
+          ) : null}
+        </div>
+      ) : null}
 
       {turn.confidence ? <ConfidenceMeter confidence={turn.confidence} /> : null}
 
@@ -487,7 +531,46 @@ function TurnView({ turn }: { turn: ResearchTurn }) {
           <SourcesGrid sources={turn.sources} />
         </section>
       ) : null}
+
+      {turn.question ? (
+        <section>
+          <p className="mb-2 font-heading text-[10px] font-medium uppercase tracking-[0.2em] text-[#D7E2EA]/45">
+            Suggested next steps
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {NEXT_ACTIONS.map((action) => (
+              <button
+                key={action.label}
+                type="button"
+                onClick={() => onNextAction(action, turn.question)}
+                className="rounded-full border border-white/12 bg-white/[0.04] px-3 py-1.5 text-xs text-[#D7E2EA]/70 transition-colors hover:border-cyan-400/40 hover:bg-cyan-400/10 hover:text-cyan-100"
+              >
+                {action.label}
+              </button>
+            ))}
+          </div>
+        </section>
+      ) : null}
     </div>
+  )
+}
+
+function AnswerBadge({
+  children,
+  tone,
+}: {
+  children: React.ReactNode
+  tone: "fuchsia" | "emerald" | "slate"
+}) {
+  const styles = {
+    fuchsia: "border-fuchsia-400/30 bg-fuchsia-400/10 text-fuchsia-200",
+    emerald: "border-emerald-400/30 bg-emerald-400/10 text-emerald-200",
+    slate: "border-white/15 bg-white/5 text-[#D7E2EA]/70",
+  }[tone]
+  return (
+    <span className={`rounded-full border px-2.5 py-1 text-[10px] font-medium uppercase tracking-wider ${styles}`}>
+      {children}
+    </span>
   )
 }
 
