@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono, Kanit } from "next/font/google";
 import { Toaster } from "sonner";
 
+import { ClickSound } from "@/components/click-sound";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import "./globals.css";
 
@@ -41,6 +42,7 @@ export default function RootLayout({
         <TooltipProvider>
           {children}
           <Toaster theme="dark" richColors position="top-right" />
+          <ClickSound />
         </TooltipProvider>
       </body>
     </html>
