@@ -3,6 +3,7 @@ import { Geist, Geist_Mono, Kanit } from "next/font/google";
 import { Toaster } from "sonner";
 
 import { ClickSound } from "@/components/click-sound";
+import { CursorTrail } from "@/components/cursor-trail";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import "./globals.css";
 
@@ -43,6 +44,7 @@ export default function RootLayout({
           {children}
           <Toaster theme="dark" richColors position="top-right" />
           <ClickSound />
+          <CursorTrail />
         </TooltipProvider>
       </body>
     </html>
