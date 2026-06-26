@@ -6,6 +6,7 @@ import { motion, useInView } from "framer-motion";
 import { CheckIcon, RocketIcon, XIcon } from "lucide-react";
 
 import { AppBackground } from "@/components/app-background";
+import { FeatureCards } from "@/components/feature-cards";
 
 /* ── Reusable viewport fade-in ──────────────────────────────── */
 function FI({
@@ -393,6 +394,9 @@ export default function LandingPage() {
             <GradientButton href="/signup">Start for Free</GradientButton>
           </FI>
         </section>
+
+        {/* ── Glowing Feature Cards ──────────────────────── */}
+        <FeatureCards />
 
         {/* ── Capabilities ───────────────────────────────── */}
         <section
