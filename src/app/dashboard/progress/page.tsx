@@ -1,6 +1,7 @@
 import { CalendarIcon, FlameIcon, LayersIcon, MessageSquareIcon, TargetIcon, TrendingUpIcon } from "lucide-react"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { PageHeader } from "@/components/page-header"
 import { LEARNING_MODES } from "@/lib/learning"
 import { createClient } from "@/lib/supabase/server"
 
@@ -163,18 +164,7 @@ export default async function ProgressPage() {
 
   return (
     <main className="flex flex-col gap-6">
-      {/* Header */}
-      <div className="overflow-hidden">
-        <h1
-          className="hero-heading font-heading font-black uppercase leading-none tracking-tight"
-          style={{ fontSize: "clamp(2.5rem, 8vw, 96px)" }}
-        >
-          Progress
-        </h1>
-        <p className="mt-2 font-heading text-sm font-medium uppercase tracking-widest text-[#D7E2EA]/50">
-          Your learning journey at a glance
-        </p>
-      </div>
+      <PageHeader title="Progress" subtitle="Your learning journey at a glance." />
 
       {/* Top stats */}
       <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4">
@@ -237,7 +227,7 @@ export default async function ProgressPage() {
       {/* Activity grid */}
       <Card className="border-white/10 bg-black/40 backdrop-blur-xl">
         <CardHeader>
-          <CardTitle className="font-heading text-sm font-black uppercase tracking-wider text-[#D7E2EA]">
+          <CardTitle className="font-heading text-sm font-semibold tracking-tight text-white">
             Activity
           </CardTitle>
         </CardHeader>
@@ -249,7 +239,7 @@ export default async function ProgressPage() {
       {/* Mode breakdown */}
       <Card className="border-white/10 bg-black/40 backdrop-blur-xl">
         <CardHeader>
-          <CardTitle className="font-heading text-sm font-black uppercase tracking-wider text-[#D7E2EA]">
+          <CardTitle className="font-heading text-sm font-semibold tracking-tight text-white">
             Topics Covered
           </CardTitle>
         </CardHeader>

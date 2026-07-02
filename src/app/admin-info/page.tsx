@@ -3,6 +3,7 @@ import { ArrowLeftIcon, KeyRoundIcon, LockIcon, ServerIcon } from "lucide-react"
 
 import { AppBackground } from "@/components/app-background"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { PageHeader } from "@/components/page-header"
 
 const INFO_ITEMS = [
   {
@@ -26,21 +27,11 @@ export default function AdminInfoPage() {
   return (
     <AppBackground>
       <main className="mx-auto flex min-h-screen w-full max-w-4xl flex-col justify-center gap-8 px-4 py-10">
-        <div className="overflow-hidden">
-          <h1
-            className="hero-heading font-heading font-black uppercase leading-none tracking-tight"
-            style={{ fontSize: "clamp(3rem, 10vw, 120px)" }}
-          >
-            Admin Info
-          </h1>
-          <p className="mt-3 font-heading text-sm font-medium uppercase tracking-widest text-[#D7E2EA]/50">
-            How the AI key is kept secure
-          </p>
-        </div>
+        <PageHeader title="Admin info" subtitle="How the AI key is kept secure." />
 
         <Card className="border-white/10 bg-black/40 shadow-2xl shadow-black/40 backdrop-blur-xl">
           <CardHeader>
-            <CardTitle className="font-heading text-base font-black uppercase tracking-wider text-[#D7E2EA]">
+            <CardTitle className="font-heading text-base font-semibold tracking-tight text-white">
               Admin-Managed AI Key
             </CardTitle>
             <CardDescription className="text-[#D7E2EA]/40">

@@ -3,25 +3,16 @@ import { BrainCircuitIcon } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { LEARNING_MODES, OPENROUTER_MODELS } from "@/lib/learning"
+import { PageHeader } from "@/components/page-header"
 
 export default function ModelsPage() {
   return (
     <main className="flex flex-col gap-6">
-      <div className="overflow-hidden">
-        <h1
-          className="hero-heading font-heading font-black uppercase leading-none tracking-tight"
-          style={{ fontSize: "clamp(2.5rem, 8vw, 96px)" }}
-        >
-          Models
-        </h1>
-        <p className="mt-2 font-heading text-sm font-medium uppercase tracking-widest text-[#D7E2EA]/50">
-          Available OpenRouter models and learning modes
-        </p>
-      </div>
+      <PageHeader title="Models" subtitle="Available AI models and learning modes." />
 
       <Card className="border-white/10 bg-black/40 backdrop-blur-xl">
         <CardHeader>
-          <CardTitle className="font-heading text-base font-black uppercase tracking-wider text-[#D7E2EA]">
+          <CardTitle className="font-heading text-base font-semibold tracking-tight text-white">
             AI Models
           </CardTitle>
           <CardDescription className="text-[#D7E2EA]/40">
@@ -38,9 +29,7 @@ export default function ModelsPage() {
                 <div className="flex size-8 items-center justify-center rounded-lg border border-[#D7E2EA]/15 bg-[#D7E2EA]/5 text-[#D7E2EA]">
                   <BrainCircuitIcon className="size-4" />
                 </div>
-                <span
-                  className="hero-heading font-heading text-4xl font-black leading-none"
-                >
+                <span className="font-heading text-2xl font-semibold leading-none text-white/15">
                   {String(i + 1).padStart(2, "0")}
                 </span>
               </div>
@@ -56,7 +45,7 @@ export default function ModelsPage() {
 
       <Card className="border-white/10 bg-black/40 backdrop-blur-xl">
         <CardHeader>
-          <CardTitle className="font-heading text-base font-black uppercase tracking-wider text-[#D7E2EA]">
+          <CardTitle className="font-heading text-base font-semibold tracking-tight text-white">
             Learning Modes
           </CardTitle>
           <CardDescription className="text-[#D7E2EA]/40">

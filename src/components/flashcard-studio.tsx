@@ -152,10 +152,10 @@ export function FlashcardStudio({ initialCards, initialTopic }: Props) {
     <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
       {/* ── Review area ─────────────────────────────────── */}
       <Card className="relative min-h-[520px] overflow-hidden border-white/10 bg-black/40 shadow-2xl shadow-black/40 backdrop-blur-xl">
-        <div className="pointer-events-none absolute -top-32 left-1/2 size-72 -translate-x-1/2 rounded-full bg-purple-600/20 blur-3xl" />
+        <div className="pointer-events-none absolute -top-32 left-1/2 size-72 -translate-x-1/2 rounded-full bg-indigo-500/12 blur-3xl" />
 
         <CardHeader className="relative border-b border-white/8">
-          <CardTitle className="flex items-center gap-2 font-heading text-base font-black uppercase tracking-wider text-[#D7E2EA]">
+          <CardTitle className="flex items-center gap-2 font-heading text-base font-semibold tracking-tight text-white">
             <LayersIcon className="size-4 text-purple-300" />
             Review Session
           </CardTitle>

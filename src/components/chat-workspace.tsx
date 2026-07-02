@@ -276,7 +276,7 @@ export function ChatWorkspace({ chat, messages: initialMessages, hasOpenRouter }
         <CardHeader className="border-b border-white/8">
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <div>
-              <CardTitle className="font-heading text-base font-black uppercase tracking-wider text-[#D7E2EA]">
+              <CardTitle className="font-heading text-base font-semibold tracking-tight text-white">
                 {chat?.title ?? "New learning mission"}
               </CardTitle>
               <CardDescription className="text-[#D7E2EA]/40">

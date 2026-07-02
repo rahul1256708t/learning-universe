@@ -1,4 +1,5 @@
 import { FlashcardStudio } from "@/components/flashcard-studio"
+import { PageHeader } from "@/components/page-header"
 import { createClient } from "@/lib/supabase/server"
 import type { Flashcard } from "@/lib/database.types"
 
@@ -29,17 +30,10 @@ export default async function FlashcardsPage({
 
   return (
     <main className="flex flex-col gap-6">
-      <div className="overflow-hidden">
-        <h1
-          className="hero-heading font-heading font-black uppercase leading-none tracking-tight"
-          style={{ fontSize: "clamp(2.5rem, 8vw, 96px)" }}
-        >
-          Flashcards
-        </h1>
-        <p className="mt-2 font-heading text-sm font-medium uppercase tracking-widest text-[#D7E2EA]/50">
-          Spaced repetition — review cards right before you forget them
-        </p>
-      </div>
+      <PageHeader
+        title="Flashcards"
+        subtitle="Spaced repetition — review cards right before you forget them."
+      />
 
       <FlashcardStudio initialCards={cards} initialTopic={params.topic ?? ""} />
     </main>

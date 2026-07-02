@@ -290,13 +290,12 @@ export function ResearchAgent({ chat, messages, hasOpenRouter, hasSearch, search
       {/* ── Main research console ───────────────────────── */}
       <Card className="relative min-h-[760px] overflow-hidden border-white/10 bg-black/40 shadow-2xl shadow-black/40 backdrop-blur-xl">
         {/* cosmic glow */}
-        <div className="pointer-events-none absolute -top-32 left-1/2 size-72 -translate-x-1/2 rounded-full bg-fuchsia-600/20 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-40 -right-20 size-72 rounded-full bg-cyan-500/15 blur-3xl" />
+        <div className="pointer-events-none absolute -top-32 left-1/2 size-72 -translate-x-1/2 rounded-full bg-indigo-500/12 blur-3xl" />
 
         <CardHeader className="relative border-b border-white/8">
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <div>
-              <CardTitle className="flex items-center gap-2 font-heading text-base font-black uppercase tracking-wider text-[#D7E2EA]">
+              <CardTitle className="flex items-center gap-2 font-heading text-base font-semibold tracking-tight text-white">
                 <SatelliteDishIcon className="size-4 text-cyan-300" />
                 AI Research Agent
               </CardTitle>
@@ -570,7 +569,7 @@ function AnswerBadge({
   tone: "fuchsia" | "emerald" | "slate"
 }) {
   const styles = {
-    fuchsia: "border-fuchsia-400/30 bg-fuchsia-400/10 text-fuchsia-200",
+    fuchsia: "border-indigo-400/30 bg-indigo-400/10 text-indigo-200",
     emerald: "border-emerald-400/30 bg-emerald-400/10 text-emerald-200",
     slate: "border-white/15 bg-white/5 text-[#D7E2EA]/70",
   }[tone]
@@ -597,7 +596,7 @@ function QuestionBubble({ text, classification }: { text: string; classification
       <div className="mb-1.5 flex items-center justify-between gap-2">
         <span className="font-heading text-[10px] font-medium uppercase tracking-wider text-[#D7E2EA]/40">You</span>
         {classification ? (
-          <span className="rounded-full border border-fuchsia-400/30 bg-fuchsia-400/10 px-2 py-0.5 text-[9px] font-medium uppercase tracking-wider text-fuchsia-200">
+          <span className="rounded-full border border-indigo-400/30 bg-indigo-400/10 px-2 py-0.5 text-[9px] font-medium uppercase tracking-wider text-indigo-200">
             {TYPE_LABEL[classification.type] ?? classification.type}
           </span>
         ) : null}

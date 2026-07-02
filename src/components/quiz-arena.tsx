@@ -138,7 +138,7 @@ export function QuizArena({ initialAttempts, initialTopic }: Props) {
         <div className="pointer-events-none absolute -top-32 left-1/2 size-72 -translate-x-1/2 rounded-full bg-cyan-600/15 blur-3xl" />
 
         <CardHeader className="relative border-b border-white/8">
-          <CardTitle className="flex items-center gap-2 font-heading text-base font-black uppercase tracking-wider text-[#D7E2EA]">
+          <CardTitle className="flex items-center gap-2 font-heading text-base font-semibold tracking-tight text-white">
             <CircleHelpIcon className="size-4 text-cyan-300" />
             {questions.length ? quizTopic : "Interactive Quiz"}
           </CardTitle>

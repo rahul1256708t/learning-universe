@@ -78,16 +78,11 @@ export async function DashboardShell({ children }: DashboardShellProps) {
 
           {/* Logo */}
           <Link href="/dashboard/chat" className="flex items-center gap-3 pb-1">
-            <span className="grid size-10 place-items-center rounded-xl border border-[#D7E2EA]/15 bg-[#D7E2EA]/5 text-[#D7E2EA]">
+            <span className="grid size-9 place-items-center rounded-xl border border-[#D7E2EA]/15 bg-[#D7E2EA]/5 text-[#D7E2EA]">
               <RocketIcon className="size-4" />
             </span>
-            <span>
-              <span className="block font-heading text-base font-black uppercase tracking-widest text-[#D7E2EA]">
-                Learning
-              </span>
-              <span className="block font-heading text-[0.6rem] font-medium uppercase tracking-[0.25em] text-[#D7E2EA]/50">
-                Universe
-              </span>
+            <span className="font-heading text-[15px] font-semibold tracking-tight text-white">
+              Learning Universe
             </span>
           </Link>
 
@@ -99,7 +94,7 @@ export async function DashboardShell({ children }: DashboardShellProps) {
               <Link
                 key={item.href}
                 href={item.href}
-                className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 font-heading text-sm font-medium uppercase tracking-wider text-[#D7E2EA]/50 transition-all duration-150 hover:bg-white/8 hover:text-[#D7E2EA]"
+                className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-medium text-[#D7E2EA]/55 transition-all duration-150 hover:bg-white/8 hover:text-white"
               >
                 <item.icon className="size-4 shrink-0" />
                 {item.label}
@@ -117,7 +112,7 @@ export async function DashboardShell({ children }: DashboardShellProps) {
               </AvatarFallback>
             </Avatar>
             <div className="min-w-0">
-              <p className="truncate font-heading text-sm font-medium uppercase tracking-wide text-[#D7E2EA]">
+              <p className="truncate text-sm font-medium text-white">
                 {profile?.full_name ?? "Student"}
               </p>
               <p className="truncate text-xs text-[#D7E2EA]/40">{user.email}</p>
@@ -128,7 +123,7 @@ export async function DashboardShell({ children }: DashboardShellProps) {
             <Button
               type="submit"
               variant="outline"
-              className="w-full rounded-xl border-white/15 font-heading text-xs font-medium uppercase tracking-widest text-[#D7E2EA]/60 hover:border-white/25 hover:text-[#D7E2EA]"
+              className="w-full rounded-xl border-white/15 text-xs font-medium text-[#D7E2EA]/60 hover:border-white/25 hover:text-white"
             >
               <LogOutIcon className="size-3.5" data-icon="inline-start" />
               Logout
@@ -139,9 +134,9 @@ export async function DashboardShell({ children }: DashboardShellProps) {
 
           {/* Chat history */}
           <section className="min-h-0 flex-1 overflow-hidden">
-            <div className="mb-3 flex items-center gap-2 font-heading text-xs font-medium uppercase tracking-[0.2em] text-[#D7E2EA]/40">
+            <div className="mb-3 flex items-center gap-2 text-[11px] font-medium uppercase tracking-[0.14em] text-[#D7E2EA]/35">
               <HistoryIcon className="size-3.5" />
-              Chat History
+              Recent research
             </div>
             <div className="flex flex-col gap-1.5">
               {chats?.length ? (
@@ -151,7 +146,7 @@ export async function DashboardShell({ children }: DashboardShellProps) {
                     href={`/dashboard/chat?chatId=${chat.id}`}
                     className="rounded-xl border border-white/8 bg-white/[0.03] p-3 transition hover:bg-white/[0.07]"
                   >
-                    <p className="line-clamp-1 font-heading text-xs font-medium uppercase tracking-wide text-[#D7E2EA]/80">
+                    <p className="line-clamp-1 text-xs font-medium text-[#D7E2EA]/80">
                       {chat.title}
                     </p>
                     <div className="mt-1.5 flex flex-wrap gap-1">

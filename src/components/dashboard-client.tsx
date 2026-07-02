@@ -7,6 +7,7 @@ import { ArrowRightIcon, FlameIcon, MessageSquareIcon, SettingsIcon, TrendingUpI
 import { buttonVariants } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { PageHeader } from "@/components/page-header"
 import { getModeName, getModelName } from "@/lib/learning"
 
 type RecentChat = {
@@ -74,10 +75,7 @@ function AnimatedStat({ label, value, suffix = "" }: { label: string; value: num
       <p className="font-heading text-xs font-medium uppercase tracking-[0.2em] text-[#D7E2EA]/45">
         {label}
       </p>
-      <p
-        className="hero-heading font-heading font-black leading-none"
-        style={{ fontSize: "clamp(2.5rem, 6vw, 72px)" }}
-      >
+      <p className="font-heading text-4xl font-semibold leading-none tracking-tight text-white md:text-5xl">
         {count}
         {suffix}
       </p>
@@ -96,15 +94,10 @@ function StreakWidget({ streak }: { streak: number }) {
         </p>
       </div>
       <div className="flex items-end gap-3">
-        <p
-          className="hero-heading font-heading font-black leading-none text-orange-400"
-          style={{ fontSize: "clamp(2.5rem, 6vw, 72px)" }}
-        >
+        <p className="font-heading text-4xl font-semibold leading-none tracking-tight text-white md:text-5xl">
           {streak}
         </p>
-        <p className="mb-2 font-heading text-sm font-medium uppercase tracking-widest text-[#D7E2EA]/40">
-          {streak === 1 ? "day" : "days"}
-        </p>
+        <p className="mb-1 text-sm text-[#D7E2EA]/40">{streak === 1 ? "day" : "days"}</p>
       </div>
       {streak === 0 ? (
         <p className="text-xs text-[#D7E2EA]/30">Start a chat today to begin your streak.</p>
@@ -132,17 +125,7 @@ export function DashboardClient({ chatCount, messageCount, recentChats, chatDate
       </div>
 
       {/* Heading */}
-      <div className="overflow-hidden">
-        <h1
-          className="hero-heading font-heading font-black uppercase leading-none tracking-tight"
-          style={{ fontSize: "clamp(2.5rem, 8vw, 96px)" }}
-        >
-          Dashboard
-        </h1>
-        <p className="mt-2 font-heading text-sm font-medium uppercase tracking-widest text-[#D7E2EA]/50">
-          Your Learning Universe command center
-        </p>
-      </div>
+      <PageHeader title="Dashboard" subtitle="Your Learning Universe command center." />
 
       {/* Quick actions */}
       <div className="grid gap-4 md:grid-cols-3">
@@ -180,7 +163,7 @@ export function DashboardClient({ chatCount, messageCount, recentChats, chatDate
               <div className="mb-1 flex size-9 items-center justify-center rounded-xl border border-[#D7E2EA]/15 bg-[#D7E2EA]/5 text-[#D7E2EA]">
                 <Icon className="size-4" />
               </div>
-              <CardTitle className="font-heading text-base uppercase tracking-wider text-[#D7E2EA]">
+              <CardTitle className="font-heading text-base font-semibold tracking-tight text-white">
                 {title}
               </CardTitle>
               <CardDescription className="text-[#D7E2EA]/45">{text}</CardDescription>

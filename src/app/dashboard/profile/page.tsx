@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { PageHeader } from "@/components/page-header"
 import { createClient } from "@/lib/supabase/server"
 
 type SearchParams = Promise<{ notice?: string; error?: string }>
@@ -21,21 +22,11 @@ export default async function ProfilePage({ searchParams }: { searchParams: Sear
 
   return (
     <main className="flex flex-col gap-6">
-      <div className="overflow-hidden">
-        <h1
-          className="hero-heading font-heading font-black uppercase leading-none tracking-tight"
-          style={{ fontSize: "clamp(2.5rem, 8vw, 96px)" }}
-        >
-          Profile
-        </h1>
-        <p className="mt-2 font-heading text-sm font-medium uppercase tracking-widest text-[#D7E2EA]/50">
-          Manage your Learning Universe identity
-        </p>
-      </div>
+      <PageHeader title="Profile" subtitle="Manage your Learning Universe identity." />
 
       <Card className="max-w-2xl border-white/10 bg-black/40 backdrop-blur-xl">
         <CardHeader>
-          <CardTitle className="font-heading text-base font-black uppercase tracking-wider text-[#D7E2EA]">
+          <CardTitle className="font-heading text-base font-semibold tracking-tight text-white">
             User Profile
           </CardTitle>
           <CardDescription className="text-[#D7E2EA]/40">

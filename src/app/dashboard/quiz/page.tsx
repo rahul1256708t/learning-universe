@@ -1,3 +1,4 @@
+import { PageHeader } from "@/components/page-header"
 import { QuizArena } from "@/components/quiz-arena"
 import { createClient } from "@/lib/supabase/server"
 import type { QuizAttempt } from "@/lib/database.types"
@@ -28,17 +29,10 @@ export default async function QuizPage({
 
   return (
     <main className="flex flex-col gap-6">
-      <div className="overflow-hidden">
-        <h1
-          className="hero-heading font-heading font-black uppercase leading-none tracking-tight"
-          style={{ fontSize: "clamp(2.5rem, 8vw, 96px)" }}
-        >
-          Quiz Arena
-        </h1>
-        <p className="mt-2 font-heading text-sm font-medium uppercase tracking-widest text-[#D7E2EA]/50">
-          AI-generated quizzes with instant feedback and scoring
-        </p>
-      </div>
+      <PageHeader
+        title="Quiz Arena"
+        subtitle="AI-generated quizzes with instant feedback and scoring."
+      />
 
       <QuizArena initialAttempts={attempts} initialTopic={params.topic ?? ""} />
     </main>

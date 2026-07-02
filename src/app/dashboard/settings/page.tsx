@@ -2,6 +2,7 @@ import { CheckCircle2Icon, XCircleIcon } from "lucide-react"
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { hasSupabaseConfig } from "@/lib/supabase/config"
+import { PageHeader } from "@/components/page-header"
 
 export default function SettingsPage() {
   const rows = [
@@ -14,21 +15,11 @@ export default function SettingsPage() {
 
   return (
     <main className="flex flex-col gap-6">
-      <div className="overflow-hidden">
-        <h1
-          className="hero-heading font-heading font-black uppercase leading-none tracking-tight"
-          style={{ fontSize: "clamp(2.5rem, 8vw, 96px)" }}
-        >
-          Settings
-        </h1>
-        <p className="mt-2 font-heading text-sm font-medium uppercase tracking-widest text-[#D7E2EA]/50">
-          Deployment readiness for Vercel and Supabase
-        </p>
-      </div>
+      <PageHeader title="Settings" subtitle="Deployment readiness for Vercel and Supabase." />
 
       <Card className="border-white/10 bg-black/40 backdrop-blur-xl">
         <CardHeader>
-          <CardTitle className="font-heading text-base font-black uppercase tracking-wider text-[#D7E2EA]">
+          <CardTitle className="font-heading text-base font-semibold tracking-tight text-white">
             Environment Variables
           </CardTitle>
           <CardDescription className="text-[#D7E2EA]/40">
