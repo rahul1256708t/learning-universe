@@ -143,17 +143,11 @@ export function FlashcardPanel({ lastAiContent, model, chatId }: Props) {
             type="button"
             onClick={generate}
             disabled={isPending || !lastAiContent}
-            style={
+            className={`flex w-full items-center justify-center gap-2 rounded-xl px-4 py-2.5 font-heading text-xs font-medium uppercase tracking-widest transition disabled:cursor-not-allowed disabled:opacity-40 ${
               !isPending && lastAiContent
-                ? {
-                    background:
-                      "linear-gradient(123deg, #18011F 7%, #B600A8 37%, #7621B0 72%, #BE4C00 100%)",
-                    outline: "2px solid #ffffff",
-                    outlineOffset: "-2px",
-                  }
-                : undefined
-            }
-            className="flex w-full items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 font-heading text-xs font-medium uppercase tracking-widest text-[#D7E2EA]/70 transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40"
+                ? "bg-white text-[#05070D] hover:shadow-lg hover:shadow-white/15"
+                : "border border-white/10 bg-white/5 text-[#D7E2EA]/70 hover:bg-white/10"
+            }`}
           >
             {isPending ? (
               <>

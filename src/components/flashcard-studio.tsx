@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState, useTransition } from "react"
+import { useMemo, useState, useSyncExternalStore, useTransition } from "react"
 import {
   CheckIcon,
   LayersIcon,
@@ -23,6 +23,19 @@ type Props = {
 
 type Rating = "again" | "good" | "easy"
 
+/* Coarse shared clock (30s ticks) so due-ness can be read purely in render. */
+const CLOCK_TICK_MS = 30_000
+function subscribeClock(onTick: () => void) {
+  const id = setInterval(onTick, CLOCK_TICK_MS)
+  return () => clearInterval(id)
+}
+function clockSnapshot() {
+  return Math.floor(Date.now() / CLOCK_TICK_MS)
+}
+function serverClockSnapshot() {
+  return 0 // On the server nothing is "due"; the client corrects on hydration.
+}
+
 /**
  * Flashcard Studio — generate decks with the agent, then review them with
  * spaced repetition. Ratings reschedule each card server-side (SM-2 lite).
@@ -38,7 +51,10 @@ export function FlashcardStudio({ initialCards, initialTopic }: Props) {
   const [reviewedCount, setReviewedCount] = useState(0)
   const [isRating, startRating] = useTransition()
 
-  const now = Date.now()
+  // A 30s clock read as an external store, so due-ness stays pure during
+  // render and cards that fall due while the page is open become reviewable.
+  const now = useSyncExternalStore(subscribeClock, clockSnapshot, serverClockSnapshot) * CLOCK_TICK_MS
+
   const dueCards = useMemo(
     () => cards.filter((c) => new Date(c.due_at).getTime() <= now),
     [cards, now]
@@ -249,13 +265,7 @@ export function FlashcardStudio({ initialCards, initialTopic }: Props) {
                 <button
                   type="button"
                   onClick={() => startReview(dueCards.map((c) => c.id))}
-                  style={{
-                    background: "linear-gradient(123deg, #18011F 7%, #B600A8 37%, #7621B0 72%, #BE4C00 100%)",
-                    boxShadow: "0px 4px 4px rgba(181, 1, 167, 0.25), 4px 4px 12px #7721B1 inset",
-                    outline: "2px solid #ffffff",
-                    outlineOffset: "-3px",
-                  }}
-                  className="flex items-center gap-2 rounded-full px-8 py-3 font-heading text-sm font-medium uppercase tracking-widest text-white transition-transform duration-200 hover:scale-[1.03]"
+                  className="flex items-center gap-2 rounded-full bg-white px-8 py-3 font-heading text-sm font-medium uppercase tracking-widest text-[#05070D] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-white/15"
                 >
                   <ZapIcon className="size-4" />
                   Review {dueCards.length} due card{dueCards.length === 1 ? "" : "s"}

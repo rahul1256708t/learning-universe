@@ -463,15 +463,7 @@ export function ChatWorkspace({ chat, messages: initialMessages, hasOpenRouter }
                 type="button"
                 onClick={submitMessage}
                 disabled={isPending}
-                style={{
-                  background:
-                    "linear-gradient(123deg, #18011F 7%, #B600A8 37%, #7621B0 72%, #BE4C00 100%)",
-                  boxShadow:
-                    "0px 4px 4px rgba(181, 1, 167, 0.25), 4px 4px 12px #7721B1 inset",
-                  outline: "2px solid #ffffff",
-                  outlineOffset: "-3px",
-                }}
-                className="flex items-center gap-2 rounded-full px-6 py-2.5 font-heading text-xs font-medium uppercase tracking-widest text-white transition-transform duration-200 hover:scale-[1.03] disabled:cursor-not-allowed disabled:opacity-50 sm:px-8 sm:py-3 sm:text-sm"
+                className="flex items-center gap-2 rounded-full bg-white px-6 py-2.5 font-heading text-xs font-medium uppercase tracking-widest text-[#05070D] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-white/15 disabled:cursor-not-allowed disabled:opacity-50 sm:px-8 sm:py-3 sm:text-sm"
               >
                 <SendIcon className="size-3.5" />
                 Launch question
