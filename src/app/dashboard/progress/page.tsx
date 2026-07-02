@@ -1,4 +1,4 @@
-import { CalendarIcon, FlameIcon, MessageSquareIcon, TrendingUpIcon } from "lucide-react"
+import { CalendarIcon, FlameIcon, LayersIcon, MessageSquareIcon, TargetIcon, TrendingUpIcon } from "lucide-react"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { LEARNING_MODES } from "@/lib/learning"
@@ -95,6 +95,10 @@ export default async function ProgressPage() {
   let chatDates: string[] = []
   const modeCounts: Record<string, number> = {}
   let totalTokens = 0
+  let flashcardCount = 0
+  let flashcardsDue = 0
+  let quizCount = 0
+  let quizAccuracy: number | null = null
 
   if (supabase) {
     const [
@@ -102,11 +106,24 @@ export default async function ProgressPage() {
       { count: mc },
       { data: chatRows },
       { data: usageLogs },
+      { count: fc },
+      { count: fdc },
+      { data: quizRows },
     ] = await Promise.all([
       supabase.from("chats").select("*", { count: "exact", head: true }),
       supabase.from("messages").select("*", { count: "exact", head: true }),
       supabase.from("chats").select("created_at, mode").order("created_at", { ascending: false }).limit(200),
       supabase.from("usage_logs").select("tokens_used"),
+      supabase.from("flashcards").select("*", { count: "exact", head: true }),
+      supabase
+        .from("flashcards")
+        .select("*", { count: "exact", head: true })
+        .lte("due_at", new Date().toISOString()),
+      supabase
+        .from("quiz_attempts")
+        .select("total_questions, correct_count")
+        .order("created_at", { ascending: false })
+        .limit(100),
     ])
 
     chatCount = cc ?? 0
@@ -118,6 +135,13 @@ export default async function ProgressPage() {
     }
 
     totalTokens = (usageLogs ?? []).reduce((sum, r) => sum + (r.tokens_used ?? 0), 0)
+
+    flashcardCount = fc ?? 0
+    flashcardsDue = fdc ?? 0
+    quizCount = (quizRows ?? []).length
+    const totalAnswered = (quizRows ?? []).reduce((sum, r) => sum + r.total_questions, 0)
+    const totalCorrect = (quizRows ?? []).reduce((sum, r) => sum + r.correct_count, 0)
+    quizAccuracy = totalAnswered > 0 ? Math.round((totalCorrect / totalAnswered) * 100) : null
   }
 
   const streak = calcStreak(chatDates)
@@ -181,6 +205,32 @@ export default async function ProgressPage() {
           label="Tokens Used"
           value={totalTokens > 1000 ? `${(totalTokens / 1000).toFixed(1)}k` : totalTokens.toString()}
           sub={topMode ? `Favorite: ${MODE_ICONS[topMode[0]]} ${topMode[0]}` : "No data yet"}
+        />
+      </div>
+
+      {/* Study tools stats */}
+      <div className="grid gap-4 sm:grid-cols-2">
+        <StatCard
+          icon={<LayersIcon className="size-4 text-fuchsia-400" />}
+          label="Flashcards"
+          value={flashcardCount.toLocaleString()}
+          sub={
+            flashcardCount === 0
+              ? "Generate a deck to start"
+              : flashcardsDue > 0
+                ? `${flashcardsDue} due for review now`
+                : "All caught up — nothing due"
+          }
+        />
+        <StatCard
+          icon={<TargetIcon className="size-4 text-cyan-400" />}
+          label="Quiz Accuracy"
+          value={quizAccuracy !== null ? `${quizAccuracy}%` : "—"}
+          sub={
+            quizCount > 0
+              ? `Across ${quizCount} quiz${quizCount === 1 ? "" : "zes"}`
+              : "Take a quiz to see your accuracy"
+          }
         />
       </div>
 

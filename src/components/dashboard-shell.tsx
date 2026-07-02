@@ -3,8 +3,10 @@ import { redirect } from "next/navigation"
 import {
   BookOpenIcon,
   BrainCircuitIcon,
+  CircleHelpIcon,
   HistoryIcon,
   InfoIcon,
+  LayersIcon,
   LogOutIcon,
   RocketIcon,
   SatelliteDishIcon,
@@ -28,6 +30,8 @@ type DashboardShellProps = {
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: BookOpenIcon },
   { href: "/dashboard/chat", label: "Research Agent", icon: SatelliteDishIcon },
+  { href: "/dashboard/flashcards", label: "Flashcards", icon: LayersIcon },
+  { href: "/dashboard/quiz", label: "Quiz Arena", icon: CircleHelpIcon },
   { href: "/dashboard/progress", label: "Progress", icon: TrendingUpIcon },
   { href: "/dashboard/models", label: "Models", icon: BrainCircuitIcon },
   { href: "/dashboard/profile", label: "Profile", icon: UserRoundIcon },
