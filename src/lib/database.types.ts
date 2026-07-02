@@ -57,6 +57,31 @@ export type ResearchMemory = {
   created_at: string
 }
 
+export type Flashcard = {
+  id: string
+  user_id: string
+  topic: string
+  question: string
+  answer: string
+  ease: number
+  interval_days: number
+  repetitions: number
+  due_at: string
+  last_reviewed_at: string | null
+  created_at: string
+}
+
+export type QuizAttempt = {
+  id: string
+  user_id: string
+  topic: string
+  difficulty: string
+  total_questions: number
+  correct_count: number
+  questions: unknown
+  created_at: string
+}
+
 export type Database = {
   public: {
     Tables: {
@@ -145,6 +170,48 @@ export type Database = {
           source_urls?: unknown
           mode?: string | null
           embedding?: number[] | null
+          created_at?: string
+        }
+        Update: never
+        Relationships: []
+      }
+      flashcards: {
+        Row: Flashcard
+        Insert: {
+          id?: string
+          user_id: string
+          topic: string
+          question: string
+          answer: string
+          ease?: number
+          interval_days?: number
+          repetitions?: number
+          due_at?: string
+          last_reviewed_at?: string | null
+          created_at?: string
+        }
+        Update: {
+          topic?: string
+          question?: string
+          answer?: string
+          ease?: number
+          interval_days?: number
+          repetitions?: number
+          due_at?: string
+          last_reviewed_at?: string | null
+        }
+        Relationships: []
+      }
+      quiz_attempts: {
+        Row: QuizAttempt
+        Insert: {
+          id?: string
+          user_id: string
+          topic: string
+          difficulty?: string
+          total_questions: number
+          correct_count: number
+          questions?: unknown
           created_at?: string
         }
         Update: never

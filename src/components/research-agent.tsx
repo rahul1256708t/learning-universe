@@ -2,6 +2,7 @@
 
 import { useMemo, useRef, useState, useTransition } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 import {
@@ -59,15 +60,22 @@ type ResearchAgentProps = {
   searchProvider: string
 }
 
-/* Quick follow-ups offered under a finished answer, per the product spec. */
-type NextAction = { label: string; mode: ResearchModeId | null; prompt: (q: string) => string }
+/* Quick follow-ups offered under a finished answer, per the product spec.
+   Actions either preload a follow-up prompt, or (href) open a study tool
+   with the topic prefilled. */
+type NextAction = {
+  label: string
+  mode: ResearchModeId | null
+  prompt?: (q: string) => string
+  href?: (q: string) => string
+}
 
 const NEXT_ACTIONS: NextAction[] = [
   { label: "📝 Make short notes", mode: "notes", prompt: (q) => `Make short revision notes on: ${q}` },
-  { label: "❓ Generate quiz", mode: "quiz", prompt: (q) => `Generate a practice quiz on: ${q}` },
+  { label: "❓ Take a quiz", mode: null, href: (q) => `/dashboard/quiz?topic=${encodeURIComponent(q)}` },
   { label: "🧒 Explain like class 10", mode: "tutor", prompt: (q) => `Explain this for a class 10 student: ${q}` },
   { label: "🏆 Board-style answer", mode: "exam", prompt: (q) => `Give a board-exam-style answer for: ${q}` },
-  { label: "🃏 Create flashcards", mode: "notes", prompt: (q) => `Create flashcards (question → answer pairs) for: ${q}` },
+  { label: "🃏 Create flashcards", mode: null, href: (q) => `/dashboard/flashcards?topic=${encodeURIComponent(q)}` },
   { label: "➕ Solve similar questions", mode: "homework", prompt: (q) => `Give and solve 3 similar practice questions for: ${q}` },
 ]
 
@@ -80,6 +88,7 @@ const TYPE_LABEL: Record<string, string> = {
 }
 
 export function ResearchAgent({ chat, messages, hasOpenRouter, hasSearch, searchProvider }: ResearchAgentProps) {
+  const router = useRouter()
   const [chatId, setChatId] = useState(chat?.id ?? null)
   const [mode, setMode] = useState<ResearchModeId>((chat?.mode as ResearchModeId) ?? DEFAULT_RESEARCH_MODE)
   const [model, setModel] = useState(chat?.model && AGENT_MODELS.some((m) => m.id === chat.model) ? chat.model : DEFAULT_AGENT_MODEL)
@@ -246,10 +255,14 @@ export function ResearchAgent({ chat, messages, hasOpenRouter, hasSearch, search
   }
 
   /* A "next action" chip preloads the composer with a follow-up and switches
-     to the most useful mode, so the student can launch it in one tap. */
+     to the most useful mode — or jumps to a study tool with the topic ready. */
   function applyNextAction(action: NextAction, question: string) {
+    if (action.href) {
+      router.push(action.href(question))
+      return
+    }
     if (action.mode) setMode(action.mode)
-    setInput(action.prompt(question))
+    if (action.prompt) setInput(action.prompt(question))
     toast.info("Loaded a follow-up — press Start research.")
     queueMicrotask(() => scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight }))
   }
