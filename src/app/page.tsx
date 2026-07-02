@@ -2,30 +2,48 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { motion, useInView } from "framer-motion";
-import { CheckIcon, RocketIcon, XIcon } from "lucide-react";
+import { motion, useReducedMotion } from "framer-motion";
+import {
+  ArrowRightIcon,
+  BookOpenCheckIcon,
+  BrainCircuitIcon,
+  CheckIcon,
+  CircleHelpIcon,
+  GlobeIcon,
+  LayersIcon,
+  LockIcon,
+  RocketIcon,
+  SearchIcon,
+  SparklesIcon,
+  TrendingUpIcon,
+} from "lucide-react";
 
-import { AppBackground } from "@/components/app-background";
-import { FeatureCards } from "@/components/feature-cards";
+/* ════════════════════════════════════════════════════════════════
+   Learning Universe — landing page.
+   Direction: minimal SaaS ("Serein"-style hero, motion used sparingly),
+   executed like a big-tech product page: calm type, one accent,
+   honest copy, and the product itself as the hero demo.
+   ════════════════════════════════════════════════════════════════ */
 
-/* ── Reusable viewport fade-in ──────────────────────────────── */
-function FI({
+const INK = "#05070D";
+const ACCENT_GRADIENT = "linear-gradient(90deg, #22D3EE 0%, #818CF8 100%)";
+
+/* ── Scroll-reveal wrapper ───────────────────────────────────── */
+function Reveal({
   children,
   delay = 0,
-  y = 30,
   className = "",
 }: {
   children: React.ReactNode;
   delay?: number;
-  y?: number;
   className?: string;
 }) {
   return (
     <motion.div
-      initial={{ opacity: 0, y }}
+      initial={{ opacity: 0, y: 16 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "50px", amount: 0 }}
-      transition={{ duration: 0.7, delay, ease: [0.25, 0.1, 0.25, 1] }}
+      viewport={{ once: true, margin: "-40px" }}
+      transition={{ duration: 0.55, delay, ease: [0.22, 0.61, 0.36, 1] }}
       className={className}
     >
       {children}
@@ -33,173 +51,226 @@ function FI({
   );
 }
 
-/* ── Gradient pill button ────────────────────────────────────── */
-function GradientButton({ children, href }: { children: React.ReactNode; href: string }) {
-  return (
-    <Link
-      href={href}
-      style={{
-        background:
-          "linear-gradient(123deg, #18011F 7%, #B600A8 37%, #7621B0 72%, #BE4C00 100%)",
-        boxShadow:
-          "0px 4px 4px rgba(181, 1, 167, 0.25), 4px 4px 12px #7721B1 inset",
-        outline: "2px solid #ffffff",
-        outlineOffset: "-3px",
-      }}
-      className="inline-block rounded-full px-8 py-3 text-xs font-medium uppercase tracking-widest text-white transition-transform duration-200 hover:scale-[1.03] sm:px-10 sm:py-3.5 sm:text-sm md:px-12 md:py-4 md:text-base"
-    >
-      {children}
-    </Link>
-  );
-}
-
-/* ── Ghost pill button ──────────────────────────────────────── */
-function GhostButton({ children, href }: { children: React.ReactNode; href: string }) {
-  return (
-    <Link
-      href={href}
-      className="inline-block rounded-full border-2 border-[#D7E2EA] px-8 py-3 text-xs font-medium uppercase tracking-widest text-[#D7E2EA] transition-colors duration-200 hover:bg-[#D7E2EA]/10 sm:px-10 sm:py-3.5 sm:text-sm md:px-12 md:py-4 md:text-base"
-    >
-      {children}
-    </Link>
-  );
-}
-
-/* ── Animated counter stat ───────────────────────────────────── */
-function StatCounter({
-  target,
-  suffix = "",
-  label,
-  duration = 2200,
+/* ── Buttons ─────────────────────────────────────────────────── */
+function PrimaryButton({
+  children,
+  href,
+  dark = false,
 }: {
-  target: number;
-  suffix?: string;
-  label: string;
-  duration?: number;
+  children: React.ReactNode;
+  href: string;
+  dark?: boolean;
 }) {
-  const ref = useRef<HTMLDivElement>(null);
-  const inView = useInView(ref, { once: true });
-  const [count, setCount] = useState(0);
-  const started = useRef(false);
+  return (
+    <Link
+      href={href}
+      className={`group inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-medium transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg sm:px-7 ${
+        dark
+          ? "bg-[#05070D] text-white hover:shadow-black/20"
+          : "bg-white text-[#05070D] hover:shadow-white/10"
+      }`}
+    >
+      {children}
+      <ArrowRightIcon className="size-4 transition-transform duration-200 group-hover:translate-x-0.5" />
+    </Link>
+  );
+}
+
+function GhostButton({
+  children,
+  href,
+  dark = false,
+}: {
+  children: React.ReactNode;
+  href: string;
+  dark?: boolean;
+}) {
+  return (
+    <Link
+      href={href}
+      className={`inline-flex items-center gap-2 rounded-full border px-6 py-3 text-sm font-medium transition-colors duration-200 sm:px-7 ${
+        dark
+          ? "border-black/15 text-[#05070D] hover:bg-black/5"
+          : "border-white/20 text-white hover:bg-white/8"
+      }`}
+    >
+      {children}
+    </Link>
+  );
+}
+
+/* ── Signature: the Research Console demo ─────────────────────
+   An auto-playing simulation of a real agent run. This is the
+   product's core loop shown truthfully — steps, sources, cited
+   answer, confidence — not decorative animation.               */
+
+const DEMO_QUESTION = "Why is the sky blue at noon but red at sunset?";
+const DEMO_STEPS = ["Understand", "Search", "Read", "Verify", "Write"] as const;
+const DEMO_SOURCES = [
+  { name: "NASA Space Place", domain: "spaceplace.nasa.gov" },
+  { name: "NOAA SciJinks", domain: "scijinks.gov" },
+  { name: "The Physics Classroom", domain: "physicsclassroom.com" },
+];
+const DEMO_ANSWER =
+  "Sunlight scatters off air molecules, and shorter blue wavelengths scatter the most — so the daytime sky looks blue [1]. At sunset, light travels through much more atmosphere, the blue is scattered away, and the longer red wavelengths reach your eyes [2][3].";
+
+/* Timeline (ms from start): when each step becomes active. */
+const STEP_TIMES = [400, 1400, 2600, 3900, 4900];
+const SOURCE_TIMES = [2700, 3100, 3500];
+const TYPE_START = 5200;
+const TYPE_SPEED = 14; // ms per character
+const LOOP_PAUSE = 5000;
+
+function ResearchConsole() {
+  const reduceMotion = useReducedMotion();
+  const [elapsed, setElapsed] = useState(0);
+  const frame = useRef<number>(0);
 
   useEffect(() => {
-    if (!inView || started.current) return;
-    started.current = true;
-    const start = performance.now();
+    if (reduceMotion) return;
+    let start = performance.now();
+    const total = TYPE_START + DEMO_ANSWER.length * TYPE_SPEED + LOOP_PAUSE;
     const tick = (now: number) => {
-      const p = Math.min((now - start) / duration, 1);
-      const eased = 1 - Math.pow(1 - p, 3);
-      setCount(Math.floor(eased * target));
-      if (p < 1) requestAnimationFrame(tick);
+      const t = now - start;
+      if (t >= total) start = now;
+      setElapsed(t % total);
+      frame.current = requestAnimationFrame(tick);
     };
-    requestAnimationFrame(tick);
-  }, [inView, target, duration]);
+    frame.current = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frame.current);
+  }, [reduceMotion]);
+
+  // With reduced motion, render the finished state.
+  const t = reduceMotion ? Number.POSITIVE_INFINITY : elapsed;
+  const typedChars = Math.max(0, Math.floor((t - TYPE_START) / TYPE_SPEED));
+  const answer = DEMO_ANSWER.slice(0, typedChars);
+  const doneTyping = typedChars >= DEMO_ANSWER.length;
 
   return (
-    <div ref={ref} className="flex flex-col items-center gap-2">
-      <p
-        className="font-heading font-black leading-none tracking-tight text-white"
-        style={{ fontSize: "clamp(2.8rem, 7vw, 6rem)" }}
-      >
-        {count.toLocaleString()}
-        {suffix}
-      </p>
-      <p className="font-heading text-xs font-medium uppercase tracking-[0.25em] text-white/45">
-        {label}
-      </p>
-    </div>
-  );
-}
-
-/* ── App mockup (CSS) ────────────────────────────────────────── */
-function AppMockup() {
-  return (
-    <div className="relative mx-auto w-full max-w-3xl">
-      {/* Glow behind mockup */}
+    <div className="relative mx-auto w-full max-w-4xl">
+      {/* Single restrained accent glow */}
       <div
-        className="absolute inset-0 rounded-3xl blur-3xl"
-        style={{
-          background:
-            "radial-gradient(ellipse at center, rgba(182,0,168,0.25) 0%, rgba(118,33,176,0.15) 60%, transparent 100%)",
-        }}
+        className="pointer-events-none absolute -inset-6 rounded-[32px] opacity-25 blur-3xl"
+        style={{ background: ACCENT_GRADIENT }}
       />
-      {/* Browser chrome */}
-      <div className="relative overflow-hidden rounded-2xl border border-white/15 bg-[#0a0a0f] shadow-2xl shadow-black/60">
-        {/* Browser bar */}
-        <div className="flex items-center gap-2 border-b border-white/8 bg-white/[0.03] px-4 py-3">
-          <span className="size-3 rounded-full bg-red-500/70" />
-          <span className="size-3 rounded-full bg-yellow-500/70" />
-          <span className="size-3 rounded-full bg-green-500/70" />
-          <div className="mx-auto flex h-6 w-56 items-center rounded-md bg-white/5 px-3">
-            <span className="text-[10px] text-white/30">learninguniv.app/dashboard/chat</span>
+      <div className="relative overflow-hidden rounded-2xl border border-white/12 bg-[#0A0E17] shadow-2xl shadow-black/50">
+        {/* Window bar */}
+        <div className="flex items-center justify-between border-b border-white/8 px-5 py-3">
+          <div className="flex items-center gap-2">
+            <span className="size-2.5 rounded-full bg-white/15" />
+            <span className="size-2.5 rounded-full bg-white/15" />
+            <span className="size-2.5 rounded-full bg-white/15" />
           </div>
+          <span className="font-mono text-[11px] text-white/35">Research Agent</span>
+          <span className="w-14" />
         </div>
-        {/* App layout */}
-        <div className="flex h-72 sm:h-96">
-          {/* Sidebar */}
-          <div className="hidden w-44 flex-col gap-2 border-r border-white/8 p-3 sm:flex">
-            <div className="mb-2 flex items-center gap-2">
-              <div className="size-5 rounded bg-[#D7E2EA]/10" />
-              <div className="h-2 w-16 rounded bg-[#D7E2EA]/20" />
-            </div>
-            {["Fast Research", "Deep Research", "NCERT", "Exam", "Coding"].map((m, i) => (
-              <div
-                key={m}
-                className={`rounded-lg border px-2 py-1.5 ${
-                  i === 0
-                    ? "border-purple-500/40 bg-purple-500/15"
-                    : "border-white/5 bg-white/[0.02]"
-                }`}
-              >
+
+        <div className="grid gap-0 md:grid-cols-[220px_minmax(0,1fr)]">
+          {/* Pipeline rail */}
+          <div className="hidden flex-col gap-1 border-r border-white/8 p-4 md:flex">
+            {DEMO_STEPS.map((step, i) => {
+              const active = t >= STEP_TIMES[i];
+              const current =
+                active && (i === DEMO_STEPS.length - 1 ? !doneTyping : t < STEP_TIMES[i + 1]);
+              return (
                 <div
-                  className={`h-1.5 w-14 rounded ${i === 0 ? "bg-purple-300/70" : "bg-white/15"}`}
-                />
-              </div>
-            ))}
+                  key={step}
+                  className={`flex items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] transition-colors duration-300 ${
+                    active ? "text-white" : "text-white/30"
+                  } ${current ? "bg-white/6" : ""}`}
+                >
+                  <span
+                    className={`grid size-4.5 shrink-0 place-items-center rounded-full border text-[9px] transition-colors duration-300 ${
+                      active && !current
+                        ? "border-cyan-400/60 bg-cyan-400/15 text-cyan-300"
+                        : current
+                          ? "border-cyan-400/60 text-cyan-300"
+                          : "border-white/15 text-white/25"
+                    }`}
+                  >
+                    {active && !current ? <CheckIcon className="size-2.5" /> : i + 1}
+                  </span>
+                  {step}
+                  {current ? (
+                    <motion.span
+                      className="ml-auto size-1.5 rounded-full bg-cyan-300"
+                      animate={{ opacity: [1, 0.2, 1] }}
+                      transition={{ duration: 1, repeat: Infinity }}
+                    />
+                  ) : null}
+                </div>
+              );
+            })}
           </div>
-          {/* Chat area */}
-          <div className="flex flex-1 flex-col gap-3 p-4">
-            {/* AI message */}
-            <div className="max-w-[80%] rounded-xl border border-white/8 bg-white/[0.04] p-3">
-              <div className="mb-2 h-1.5 w-12 rounded bg-purple-400/40" />
-              <div className="flex flex-col gap-1.5">
-                <div className="h-1.5 w-full rounded bg-white/15" />
-                <div className="h-1.5 w-5/6 rounded bg-white/12" />
-                <div className="h-1.5 w-4/6 rounded bg-white/10" />
-              </div>
+
+          {/* Conversation */}
+          <div className="flex min-h-[320px] flex-col gap-3.5 p-5">
+            <div className="ml-auto max-w-[85%] rounded-2xl rounded-br-md bg-white/8 px-4 py-2.5 text-[13px] leading-relaxed text-white/85">
+              {DEMO_QUESTION}
             </div>
-            {/* User message */}
-            <div className="ml-auto max-w-[70%] rounded-xl border border-[#D7E2EA]/15 bg-[#D7E2EA]/8 p-3">
-              <div className="flex flex-col gap-1.5">
-                <div className="h-1.5 w-full rounded bg-white/25" />
-                <div className="h-1.5 w-3/4 rounded bg-white/18" />
-              </div>
+
+            {/* Source chips appear while "reading" */}
+            <div className="flex min-h-7 flex-wrap gap-1.5">
+              {DEMO_SOURCES.map((s, i) =>
+                t >= SOURCE_TIMES[i] ? (
+                  <motion.span
+                    key={s.domain}
+                    initial={reduceMotion ? false : { opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.25 }}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-white/12 bg-white/4 px-2.5 py-1 text-[11px] text-white/60"
+                  >
+                    <GlobeIcon className="size-3 text-cyan-300/80" />
+                    {s.name}
+                    <span className="hidden font-mono text-[10px] text-white/30 sm:inline">
+                      {s.domain}
+                    </span>
+                  </motion.span>
+                ) : null
+              )}
             </div>
-            {/* AI reply streaming */}
-            <div className="max-w-[80%] rounded-xl border border-white/8 bg-white/[0.04] p-3">
-              <div className="mb-2 h-1.5 w-12 rounded bg-purple-400/40" />
-              <div className="flex flex-col gap-1.5">
-                <div className="h-1.5 w-full rounded bg-white/15" />
-                <div className="h-1.5 w-3/5 rounded bg-white/12" />
+
+            {/* Streamed answer */}
+            <div className="max-w-[95%] rounded-2xl rounded-bl-md border border-white/8 bg-white/[0.03] px-4 py-3">
+              <p className="mb-1.5 flex items-center gap-1.5 text-[11px] font-medium text-cyan-300/90">
+                <SparklesIcon className="size-3" />
+                Answer · cited
+              </p>
+              <p className="min-h-16 text-[13px] leading-relaxed text-white/80">
+                {answer ? (
+                  renderWithCitations(answer)
+                ) : (
+                  <span className="text-white/30">
+                    {t < STEP_TIMES[1]
+                      ? "Understanding the question…"
+                      : t < STEP_TIMES[3]
+                        ? "Reading trusted sources…"
+                        : "Verifying facts across sources…"}
+                  </span>
+                )}
+                {answer && !doneTyping ? (
+                  <span className="ml-0.5 inline-block h-3.5 w-[2px] animate-pulse bg-cyan-300 align-middle" />
+                ) : null}
+              </p>
+              {doneTyping ? (
                 <motion.div
-                  className="h-1.5 w-8 rounded bg-purple-400/60"
-                  animate={{ opacity: [1, 0.3, 1] }}
-                  transition={{ duration: 1, repeat: Infinity }}
-                />
-              </div>
-            </div>
-            {/* Input bar */}
-            <div className="mt-auto rounded-xl border border-white/10 bg-white/[0.03] p-2.5">
-              <div className="mb-2 h-8 rounded-lg bg-black/20" />
-              <div className="flex justify-end">
-                <div
-                  className="h-7 w-24 rounded-full"
-                  style={{
-                    background:
-                      "linear-gradient(123deg, #18011F 7%, #B600A8 37%, #7621B0 72%, #BE4C00 100%)",
-                  }}
-                />
-              </div>
+                  initial={reduceMotion ? false : { opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="mt-2.5 flex items-center gap-2 border-t border-white/8 pt-2.5"
+                >
+                  <span className="text-[11px] text-white/40">Confidence</span>
+                  <span className="h-1.5 w-24 overflow-hidden rounded-full bg-white/10">
+                    <span
+                      className="block h-full w-[92%] rounded-full"
+                      style={{ background: ACCENT_GRADIENT }}
+                    />
+                  </span>
+                  <span className="text-[11px] font-medium text-cyan-300">92%</span>
+                  <span className="ml-auto hidden text-[11px] text-white/35 sm:block">
+                    3 sources verified
+                  </span>
+                </motion.div>
+              ) : null}
             </div>
           </div>
         </div>
@@ -208,378 +279,525 @@ function AppMockup() {
   );
 }
 
-/* ── Testimonials data ───────────────────────────────────────── */
-const TESTIMONIALS = [
+/** Highlight [n] citation markers in the demo answer. */
+function renderWithCitations(text: string) {
+  return text.split(/(\[\d\])/).map((part, i) =>
+    /^\[\d\]$/.test(part) ? (
+      <sup key={i} className="mx-px font-medium text-cyan-300">
+        {part}
+      </sup>
+    ) : (
+      <span key={i}>{part}</span>
+    )
+  );
+}
+
+/* ── Content data ────────────────────────────────────────────── */
+
+const PIPELINE = [
   {
-    quote:
-      "Learning Universe helped me ace my Chemistry board exam. The NCERT mode gives perfectly structured, exam-ready answers.",
-    name: "Priya Sharma",
-    role: "Class 12 · Delhi",
-    rating: 5,
+    title: "Understands the question",
+    body: "The agent classifies what you asked — a school doubt, homework, current information, or deep research — and picks the right strategy.",
   },
   {
-    quote:
-      "I use it every day for JEE prep. The Formula Helper explains each variable clearly — better than my coaching notes.",
-    name: "Arjun Mehta",
-    role: "JEE Aspirant · Pune",
-    rating: 5,
+    title: "Searches trusted sources",
+    body: "When facts are needed, it searches the live web and prefers official, educational, and documentation sources over random pages.",
   },
   {
-    quote:
-      "The Quiz Generator revised an entire chapter for me in 20 minutes. I recommend it to every classmate before exams.",
-    name: "Sneha Patel",
-    role: "Class 10 · Mumbai",
-    rating: 5,
+    title: "Verifies before answering",
+    body: "It compares what different sources say, drops weak or outdated ones, and flags disagreements instead of hiding them.",
   },
   {
-    quote:
-      "As a college student, the AI Tutor mode gives better step-by-step explanations than most textbooks I've read.",
-    name: "Rohan Verma",
-    role: "B.Tech Student · Bangalore",
-    rating: 5,
+    title: "Answers with citations",
+    body: "Every researched answer carries inline citations and a confidence score. If the evidence is thin, it says so — it never invents sources.",
+  },
+  {
+    title: "Turns it into study tools",
+    body: "One tap converts any answer into revision notes, spaced-repetition flashcards, or a scored practice quiz.",
   },
 ];
 
-/* ── Feature comparison data ─────────────────────────────────── */
-const COMPARISON_ROWS = [
-  { feature: "AI Study Chat", free: true, pro: true },
-  { feature: "Study Modes", free: "3 modes", pro: "All 8 modes" },
-  { feature: "AI Models", free: "1 model", pro: "All 6 models" },
-  { feature: "Chat History", free: "10 chats", pro: "Unlimited" },
-  { feature: "Flashcard Generator", free: false, pro: true },
-  { feature: "Progress Tracker", free: false, pro: true },
-  { feature: "Image / PDF Upload", free: false, pro: true },
-  { feature: "NCERT-style Answers", free: false, pro: true },
-  { feature: "Priority Support", free: false, pro: true },
+const FEATURES = [
+  {
+    icon: SearchIcon,
+    title: "Deep research, cited",
+    body: "Live web research with inline citations, a confidence score, and a list of exactly what was checked.",
+  },
+  {
+    icon: BrainCircuitIcon,
+    title: "10 research modes",
+    body: "Fast, Deep, NCERT, Exam, Coding, Tutor, Homework, Notes, Quiz, and Formula — each tunes how the agent searches and writes.",
+  },
+  {
+    icon: LayersIcon,
+    title: "Spaced-repetition flashcards",
+    body: "Generate a deck from any topic. Cards come back right before you'd forget them — rate Again, Good, or Easy.",
+  },
+  {
+    icon: CircleHelpIcon,
+    title: "Interactive quizzes",
+    body: "Fresh MCQs at the difficulty you choose, with instant feedback, explanations, and saved scores.",
+  },
+  {
+    icon: TrendingUpIcon,
+    title: "Progress that's yours",
+    body: "Streaks, study time, quiz accuracy, and cards due — every session saved to your account.",
+  },
+  {
+    icon: LockIcon,
+    title: "Private by design",
+    body: "API keys stay on the server. Your data is protected by row-level security — only you can read your chats.",
+  },
 ];
 
-/* ── Nav links ───────────────────────────────────────────────── */
+const FAQS = [
+  {
+    q: "Is Learning Universe free to use?",
+    a: "Yes. Create an account and start researching, generating flashcards, and taking quizzes at no cost.",
+  },
+  {
+    q: "How is this different from a normal AI chatbot?",
+    a: "A chatbot answers from memory. Learning Universe is a research agent: it decides whether your question needs live information, searches trusted sources, verifies them against each other, and cites what it used. When it isn't sure, it tells you.",
+  },
+  {
+    q: "Which AI models does it use?",
+    a: "Claude, GPT-4o, Gemini, Llama, and Mistral through OpenRouter. You can pick a model per question, and if one fails the agent automatically falls back to another so you still get an answer.",
+  },
+  {
+    q: "Does it work for NCERT and board exams?",
+    a: "Yes — NCERT and Exam modes format answers the way school boards expect: precise definitions, numbered points, and step-by-step working. Homework mode shows every step and boxes the final answer.",
+  },
+  {
+    q: "Can it invent sources?",
+    a: "No. Citations only ever point to sources the agent actually read during your question. If it can't find reliable sources, it lowers its confidence score and says so instead of guessing.",
+  },
+];
+
+const MODEL_NAMES = ["Claude", "GPT-4o", "Gemini", "Llama 3.1", "Mistral"];
+
 const NAV_LINKS = [
-  { label: "About", href: "#capabilities" },
-  { label: "Models", href: "/dashboard/models" },
-  { label: "Dashboard", href: "/dashboard" },
-  { label: "Sign In", href: "/login" },
-];
-
-const CAPABILITIES = [
-  {
-    number: "01",
-    name: "AI Research Agent",
-    description:
-      "Not a chatbot — a research agent. It classifies your question, searches the web, reads trusted sources, verifies the facts, then answers with inline citations and a confidence score.",
-  },
-  {
-    number: "02",
-    name: "Research Modes",
-    description:
-      "Six tuned modes — Fast Research, Deep Research, NCERT, Exam, Coding Research, and Step-by-Step Tutor — each shaping how deeply the agent searches and how it writes the answer.",
-  },
-  {
-    number: "03",
-    name: "Smart Models",
-    description:
-      "Switch between Claude, GPT-4o, Gemini, Llama, and more without leaving the page. Pick the best model for each task.",
-  },
-  {
-    number: "04",
-    name: "Auto-Save",
-    description:
-      "Every chat persists to your Supabase project with full message history, titles, model info, and timestamps — always accessible.",
-  },
-  {
-    number: "05",
-    name: "Secure by Design",
-    description:
-      "Your OpenRouter API key lives server-side only. Students interact with powerful AI without ever touching a credential.",
-  },
+  { label: "Features", href: "#features" },
+  { label: "How it works", href: "#how-it-works" },
+  { label: "FAQ", href: "#faq" },
 ];
 
 /* ── Page ────────────────────────────────────────────────────── */
 export default function LandingPage() {
   return (
-    <AppBackground>
-      <main style={{ overflowX: "clip" }}>
+    <main className="bg-white text-[#05070D]" style={{ overflowX: "clip" }}>
+      {/* ═══ Dark canopy: nav + hero + demo + models ═══ */}
+      <div className="relative" style={{ background: INK }}>
+        {/* Faint cosmic texture — brand nod, kept quiet */}
+        <div className="pointer-events-none absolute inset-0 bg-[url('/cosmic-field.svg')] bg-cover bg-center opacity-20" />
+        <div
+          className="pointer-events-none absolute inset-x-0 top-0 h-[480px]"
+          style={{
+            background:
+              "radial-gradient(ellipse 70% 55% at 50% -10%, rgba(99,102,241,0.18), transparent 70%)",
+          }}
+        />
 
-        {/* ── Hero ───────────────────────────────────────── */}
-        <section className="relative flex h-screen flex-col" style={{ overflowX: "clip" }}>
-          <FI delay={0} y={-20}>
-            <nav className="flex items-center justify-between px-6 pt-6 font-heading text-sm font-medium uppercase tracking-wider text-[#D7E2EA] md:px-10 md:pt-8 md:text-base lg:text-[1.1rem]">
-              <Link href="/" className="flex items-center gap-2.5">
-                <span className="grid size-9 place-items-center rounded-lg border border-[#D7E2EA]/20 bg-[#D7E2EA]/5 text-[#D7E2EA]">
-                  <RocketIcon className="size-4" />
-                </span>
-                <span className="hidden sm:block tracking-widest">LU</span>
+        {/* Nav */}
+        <header className="relative">
+          <nav className="mx-auto flex max-w-6xl items-center justify-between px-5 py-5 md:px-8">
+            <Link href="/" className="flex items-center gap-2.5">
+              <span className="grid size-8 place-items-center rounded-lg border border-white/15 bg-white/5 text-white">
+                <RocketIcon className="size-3.5" />
+              </span>
+              <span className="font-heading text-[15px] font-semibold tracking-tight text-white">
+                Learning Universe
+              </span>
+            </Link>
+            <div className="hidden items-center gap-8 text-sm text-white/60 md:flex">
+              {NAV_LINKS.map((link) => (
+                <a key={link.label} href={link.href} className="transition-colors hover:text-white">
+                  {link.label}
+                </a>
+              ))}
+            </div>
+            <div className="flex items-center gap-3">
+              <Link
+                href="/login"
+                className="hidden text-sm text-white/60 transition-colors hover:text-white sm:block"
+              >
+                Sign in
               </Link>
-              <div className="flex items-center gap-5 md:gap-10">
-                {NAV_LINKS.map((link) => (
-                  <Link
-                    key={link.label}
-                    href={link.href}
-                    className="transition-opacity duration-200 hover:opacity-70"
-                  >
-                    {link.label}
-                  </Link>
-                ))}
-              </div>
-            </nav>
-          </FI>
-
-          <div className="overflow-hidden px-6 md:px-10">
-            <FI delay={0.15} y={50}>
-              <h1
-                className="hero-heading mt-6 font-heading font-black uppercase leading-[0.92] tracking-tight sm:mt-4 md:-mt-2"
-                style={{ fontSize: "clamp(3.5rem, 17vw, 240px)" }}
+              <Link
+                href="/signup"
+                className="rounded-full bg-white px-4.5 py-2 text-sm font-medium text-[#05070D] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-white/10"
               >
-                <span className="block">Learning</span>
-                <span className="block">Universe</span>
-              </h1>
-            </FI>
-          </div>
+                Get started
+              </Link>
+            </div>
+          </nav>
+        </header>
 
-          <div className="mt-auto flex items-end justify-between px-6 pb-7 sm:pb-8 md:px-10 md:pb-10">
-            <FI delay={0.35} y={20}>
-              <p
-                className="max-w-[155px] font-light uppercase leading-snug tracking-wide text-[#D7E2EA] sm:max-w-[220px] md:max-w-[280px]"
-                style={{ fontSize: "clamp(0.75rem, 1.4vw, 1.5rem)" }}
-              >
-                an ai-powered study companion built for students who demand more
+        {/* Hero */}
+        <section className="relative mx-auto max-w-6xl px-5 pb-16 pt-14 md:px-8 md:pb-24 md:pt-20">
+          <div className="mx-auto max-w-3xl text-center">
+            <motion.div
+              initial={{ opacity: 0, y: 14 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.55, ease: [0.22, 0.61, 0.36, 1] }}
+            >
+              <p className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/4 px-3.5 py-1.5 text-xs font-medium text-white/60">
+                <span
+                  className="inline-block size-1.5 rounded-full"
+                  style={{ background: ACCENT_GRADIENT }}
+                />
+                AI research agent for students
               </p>
-            </FI>
-            <FI delay={0.5} y={20}>
-              <GradientButton href="/dashboard/chat">Launch Dashboard</GradientButton>
-            </FI>
-          </div>
-        </section>
+            </motion.div>
 
-        {/* ── Animated Stats ─────────────────────────────── */}
-        <section className="relative z-10 bg-[#0C0C0C] px-6 py-20 sm:py-24 md:px-10 md:py-28">
-          {/* Subtle glow */}
-          <div
-            className="pointer-events-none absolute inset-0"
-            style={{
-              background:
-                "radial-gradient(ellipse at 50% 50%, rgba(182,0,168,0.08) 0%, transparent 70%)",
-            }}
-          />
-          <FI y={30}>
-            <p className="mb-14 text-center font-heading text-xs font-medium uppercase tracking-[0.35em] text-white/35 md:mb-20">
-              Trusted by students across India
-            </p>
-          </FI>
-          <div className="mx-auto grid max-w-5xl grid-cols-2 gap-10 md:grid-cols-4 md:gap-6">
-            <FI delay={0}><StatCounter target={12450} suffix="+" label="Students" /></FI>
-            <FI delay={0.1}><StatCounter target={58200} suffix="+" label="Questions Answered" /></FI>
-            <FI delay={0.2}><StatCounter target={8} label="AI Study Modes" /></FI>
-            <FI delay={0.3}><StatCounter target={6} label="AI Models" /></FI>
-          </div>
-        </section>
-
-        {/* ── App Mockup ─────────────────────────────────── */}
-        <section className="bg-[#0C0C0C] px-6 pb-20 sm:pb-24 md:px-10 md:pb-28">
-          <FI y={40} className="mb-12 text-center">
-            <p className="mb-3 font-heading text-xs font-medium uppercase tracking-[0.3em] text-white/35">
-              See it in action
-            </p>
-            <h2
-              className="font-heading font-black uppercase leading-none tracking-tight text-white"
-              style={{ fontSize: "clamp(2rem, 6vw, 72px)" }}
+            <motion.h1
+              initial={{ opacity: 0, y: 18 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.08, ease: [0.22, 0.61, 0.36, 1] }}
+              className="font-heading text-4xl font-semibold leading-[1.06] tracking-tight text-white sm:text-5xl md:text-6xl"
             >
-              Your AI Study Workspace
-            </h2>
-          </FI>
-          <FI delay={0.2} y={50}>
-            <AppMockup />
-          </FI>
-          <FI delay={0.4} className="mt-10 text-center">
-            <GradientButton href="/signup">Start for Free</GradientButton>
-          </FI>
-        </section>
-
-        {/* ── Glowing Feature Cards ──────────────────────── */}
-        <FeatureCards />
-
-        {/* ── Capabilities ───────────────────────────────── */}
-        <section
-          id="capabilities"
-          className="rounded-t-[40px] bg-white px-5 py-20 sm:rounded-t-[50px] sm:px-8 sm:py-24 md:rounded-t-[60px] md:px-10 md:py-32"
-        >
-          <FI y={40}>
-            <h2
-              className="mb-16 text-center font-heading font-black uppercase leading-none tracking-tight text-[#0C0C0C] sm:mb-20 md:mb-28"
-              style={{ fontSize: "clamp(3rem, 12vw, 160px)" }}
-            >
-              Capabilities
-            </h2>
-          </FI>
-          <div className="mx-auto max-w-5xl">
-            {CAPABILITIES.map((cap, i) => (
-              <FI key={cap.number} delay={i * 0.1}>
-                <div
-                  className="flex items-start gap-5 py-8 sm:gap-8 sm:py-10 md:gap-12 md:py-12"
-                  style={{
-                    borderTop: i === 0 ? undefined : "1px solid rgba(12, 12, 12, 0.15)",
-                  }}
-                >
-                  <span
-                    className="shrink-0 font-heading font-black leading-none text-[#0C0C0C]"
-                    style={{ fontSize: "clamp(3rem, 10vw, 140px)" }}
-                  >
-                    {cap.number}
-                  </span>
-                  <div className="flex flex-col gap-3 pt-2">
-                    <h3
-                      className="font-heading font-medium uppercase text-[#0C0C0C]"
-                      style={{ fontSize: "clamp(1rem, 2.2vw, 2.1rem)" }}
-                    >
-                      {cap.name}
-                    </h3>
-                    <p
-                      className="max-w-2xl font-light leading-relaxed text-[#0C0C0C] opacity-60"
-                      style={{ fontSize: "clamp(0.85rem, 1.6vw, 1.25rem)" }}
-                    >
-                      {cap.description}
-                    </p>
-                  </div>
-                </div>
-              </FI>
-            ))}
-          </div>
-        </section>
-
-        {/* ── Testimonials ───────────────────────────────── */}
-        <section className="bg-[#f5f5f5] px-5 py-20 sm:px-8 sm:py-24 md:px-10 md:py-28">
-          <FI y={40}>
-            <h2
-              className="mb-14 text-center font-heading font-black uppercase leading-none tracking-tight text-[#0C0C0C] sm:mb-16 md:mb-20"
-              style={{ fontSize: "clamp(2.5rem, 9vw, 120px)" }}
-            >
-              Students Love It
-            </h2>
-          </FI>
-          <div className="mx-auto grid max-w-6xl gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {TESTIMONIALS.map((t, i) => (
-              <FI key={t.name} delay={i * 0.1}>
-                <div className="flex h-full flex-col gap-4 rounded-2xl border border-black/8 bg-white p-6 shadow-sm">
-                  {/* Stars */}
-                  <div className="flex gap-0.5">
-                    {Array.from({ length: t.rating }).map((_, s) => (
-                      <svg key={s} className="size-4 fill-amber-400" viewBox="0 0 20 20">
-                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                      </svg>
-                    ))}
-                  </div>
-                  <p className="flex-1 text-sm leading-relaxed text-[#0C0C0C]/70">
-                    &ldquo;{t.quote}&rdquo;
-                  </p>
-                  <div>
-                    <p className="font-heading text-sm font-semibold uppercase tracking-wide text-[#0C0C0C]">
-                      {t.name}
-                    </p>
-                    <p className="text-xs text-[#0C0C0C]/40">{t.role}</p>
-                  </div>
-                </div>
-              </FI>
-            ))}
-          </div>
-        </section>
-
-        {/* ── Feature Comparison ─────────────────────────── */}
-        <section className="bg-white px-5 py-20 sm:px-8 sm:py-24 md:px-10 md:py-28">
-          <FI y={40}>
-            <h2
-              className="mb-14 text-center font-heading font-black uppercase leading-none tracking-tight text-[#0C0C0C] sm:mb-16"
-              style={{ fontSize: "clamp(2.5rem, 9vw, 120px)" }}
-            >
-              Free vs Pro
-            </h2>
-          </FI>
-          <div className="mx-auto max-w-3xl overflow-hidden rounded-2xl border border-black/10">
-            {/* Header */}
-            <div className="grid grid-cols-3 border-b border-black/10 bg-[#0C0C0C] px-6 py-4">
-              <span className="font-heading text-xs font-medium uppercase tracking-wider text-white/50">
-                Feature
+              Study with an agent
+              <br />
+              that{" "}
+              <span
+                style={{
+                  background: ACCENT_GRADIENT,
+                  WebkitBackgroundClip: "text",
+                  backgroundClip: "text",
+                  color: "transparent",
+                }}
+              >
+                shows its sources
               </span>
-              <span className="text-center font-heading text-xs font-medium uppercase tracking-wider text-white/50">
-                Free
-              </span>
-              <span className="text-center font-heading text-xs font-bold uppercase tracking-wider text-purple-400">
-                Pro
-              </span>
-            </div>
-            {/* Rows */}
-            {COMPARISON_ROWS.map((row, i) => (
-              <FI key={row.feature} delay={i * 0.04}>
-                <div
-                  className="grid grid-cols-3 items-center px-6 py-3.5"
-                  style={{
-                    borderBottom:
-                      i < COMPARISON_ROWS.length - 1 ? "1px solid rgba(0,0,0,0.07)" : undefined,
-                    background: i % 2 === 0 ? "white" : "#fafafa",
-                  }}
-                >
-                  <span className="text-sm font-medium text-[#0C0C0C]">{row.feature}</span>
-                  <div className="flex justify-center">
-                    {typeof row.free === "boolean" ? (
-                      row.free ? (
-                        <CheckIcon className="size-4 text-green-500" />
-                      ) : (
-                        <XIcon className="size-4 text-black/20" />
-                      )
-                    ) : (
-                      <span className="font-heading text-xs uppercase tracking-wide text-[#0C0C0C]/60">
-                        {row.free}
-                      </span>
-                    )}
-                  </div>
-                  <div className="flex justify-center">
-                    {typeof row.pro === "boolean" ? (
-                      row.pro ? (
-                        <CheckIcon className="size-4 text-purple-600" />
-                      ) : (
-                        <XIcon className="size-4 text-black/20" />
-                      )
-                    ) : (
-                      <span className="font-heading text-xs font-bold uppercase tracking-wide text-purple-600">
-                        {row.pro}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              </FI>
-            ))}
-            {/* Footer CTA */}
-            <div className="flex flex-col items-center gap-4 bg-[#0C0C0C] px-6 py-8 sm:flex-row sm:justify-between">
-              <p className="text-sm text-white/50">Start free. Upgrade anytime.</p>
-              <GradientButton href="/signup">Get Started Free</GradientButton>
-            </div>
-          </div>
-        </section>
+            </motion.h1>
 
-        {/* ── CTA (dark) ─────────────────────────────────── */}
-        <section className="relative z-10 -mt-10 flex flex-col items-center justify-center rounded-t-[40px] bg-[#0C0C0C] px-5 py-24 text-center sm:-mt-12 sm:rounded-t-[50px] sm:px-8 sm:py-32 md:-mt-14 md:rounded-t-[60px] md:px-10 md:py-40">
-          <FI y={40}>
-            <h2
-              className="hero-heading font-heading font-black uppercase leading-none tracking-tight"
-              style={{ fontSize: "clamp(3.5rem, 14vw, 180px)" }}
+            <motion.p
+              initial={{ opacity: 0, y: 18 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.16, ease: [0.22, 0.61, 0.36, 1] }}
+              className="mx-auto mt-5 max-w-xl text-base leading-relaxed text-white/55 md:text-lg"
             >
-              Start Learning
-            </h2>
-          </FI>
-          <FI
-            delay={0.2}
-            className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:gap-6"
+              Learning Universe researches your question across trusted sources, verifies the facts,
+              and answers with citations — then turns it into notes, flashcards, and quizzes.
+            </motion.p>
+
+            <motion.div
+              initial={{ opacity: 0, y: 18 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.24, ease: [0.22, 0.61, 0.36, 1] }}
+              className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row"
+            >
+              <PrimaryButton href="/signup">Start researching free</PrimaryButton>
+              <GhostButton href="#how-it-works">See how it works</GhostButton>
+            </motion.div>
+          </div>
+
+          {/* Signature demo */}
+          <motion.div
+            initial={{ opacity: 0, y: 28 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.4, ease: [0.22, 0.61, 0.36, 1] }}
+            className="mt-14 md:mt-16"
           >
-            <GradientButton href="/signup">Create Account</GradientButton>
-            <GhostButton href="/login">Sign In</GhostButton>
-          </FI>
-          <FI delay={0.4} className="mt-16">
-            <p className="owner-title font-heading text-2xl font-black uppercase tracking-[0.35em] drop-shadow-[0_0_28px_rgba(244,114,182,0.85)]">
-              Owner: Rahul Gupta
-            </p>
-          </FI>
-        </section>
+            <ResearchConsole />
+          </motion.div>
 
-      </main>
-    </AppBackground>
+          {/* Model strip */}
+          <Reveal delay={0.1} className="mt-14">
+            <p className="text-center text-xs font-medium uppercase tracking-[0.2em] text-white/30">
+              Powered by the models you already trust
+            </p>
+            <div className="mt-5 flex flex-wrap items-center justify-center gap-x-10 gap-y-3">
+              {MODEL_NAMES.map((name) => (
+                <span
+                  key={name}
+                  className="font-heading text-lg font-medium tracking-tight text-white/35 transition-colors hover:text-white/60"
+                >
+                  {name}
+                </span>
+              ))}
+            </div>
+          </Reveal>
+        </section>
+      </div>
+
+      {/* ═══ How it works ═══ */}
+      <section id="how-it-works" className="scroll-mt-20 bg-white px-5 py-20 md:px-8 md:py-28">
+        <div className="mx-auto max-w-6xl">
+          <Reveal>
+            <p className="text-xs font-medium uppercase tracking-[0.2em] text-black/40">
+              How it works
+            </p>
+            <h2 className="mt-3 max-w-2xl font-heading text-3xl font-semibold leading-tight tracking-tight sm:text-4xl md:text-[2.75rem]">
+              Not a chatbot. A research pipeline that runs on every question.
+            </h2>
+          </Reveal>
+
+          <div className="mt-12 grid gap-x-10 gap-y-10 md:mt-16 md:grid-cols-2 lg:grid-cols-3">
+            {PIPELINE.map((step, i) => (
+              <Reveal key={step.title} delay={i * 0.06}>
+                <div className="flex gap-4">
+                  <span
+                    className="grid size-8 shrink-0 place-items-center rounded-full text-sm font-semibold text-white"
+                    style={{ background: INK }}
+                  >
+                    {i + 1}
+                  </span>
+                  <div>
+                    <h3 className="font-heading text-lg font-medium tracking-tight">{step.title}</h3>
+                    <p className="mt-2 text-sm leading-relaxed text-black/55">{step.body}</p>
+                  </div>
+                </div>
+              </Reveal>
+            ))}
+            {/* Pipeline CTA card fills the last cell */}
+            <Reveal delay={0.3}>
+              <Link
+                href="/signup"
+                className="group flex h-full min-h-28 items-center justify-between rounded-2xl border border-black/10 bg-[#F5F7FA] px-6 py-5 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
+              >
+                <span className="font-heading text-lg font-medium tracking-tight">
+                  Run your first research
+                </span>
+                <span
+                  className="grid size-9 place-items-center rounded-full text-white transition-transform duration-200 group-hover:translate-x-1"
+                  style={{ background: INK }}
+                >
+                  <ArrowRightIcon className="size-4" />
+                </span>
+              </Link>
+            </Reveal>
+          </div>
+        </div>
+      </section>
+
+      {/* ═══ Features ═══ */}
+      <section id="features" className="scroll-mt-20 bg-[#F5F7FA] px-5 py-20 md:px-8 md:py-28">
+        <div className="mx-auto max-w-6xl">
+          <Reveal>
+            <p className="text-xs font-medium uppercase tracking-[0.2em] text-black/40">Features</p>
+            <h2 className="mt-3 max-w-2xl font-heading text-3xl font-semibold leading-tight tracking-tight sm:text-4xl md:text-[2.75rem]">
+              Everything a study session needs, in one workspace.
+            </h2>
+          </Reveal>
+
+          <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {FEATURES.map((feature, i) => (
+              <Reveal key={feature.title} delay={i * 0.05}>
+                <div className="group h-full rounded-2xl border border-black/8 bg-white p-6 transition-all duration-200 hover:-translate-y-1 hover:shadow-lg hover:shadow-black/5">
+                  <span className="mb-4 grid size-10 place-items-center rounded-xl border border-black/8 bg-[#F5F7FA] transition-colors duration-200 group-hover:border-transparent group-hover:text-white group-hover:[background:linear-gradient(90deg,#22D3EE,#818CF8)]">
+                    <feature.icon className="size-4.5" />
+                  </span>
+                  <h3 className="font-heading text-lg font-medium tracking-tight">{feature.title}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-black/55">{feature.body}</p>
+                </div>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ═══ Study loop spotlight (dark) ═══ */}
+      <section className="relative overflow-hidden px-5 py-20 md:px-8 md:py-28" style={{ background: INK }}>
+        <div
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-[400px]"
+          style={{
+            background:
+              "radial-gradient(ellipse 60% 55% at 50% 110%, rgba(34,211,238,0.12), transparent 70%)",
+          }}
+        />
+        <div className="relative mx-auto grid max-w-6xl items-center gap-12 lg:grid-cols-2">
+          <Reveal>
+            <p className="text-xs font-medium uppercase tracking-[0.2em] text-white/35">
+              The study loop
+            </p>
+            <h2 className="mt-3 font-heading text-3xl font-semibold leading-tight tracking-tight text-white sm:text-4xl md:text-[2.75rem]">
+              Research once. Revise until it sticks.
+            </h2>
+            <p className="mt-4 max-w-lg text-base leading-relaxed text-white/55">
+              Every answer can become study material in one tap. Flashcards come back on a
+              spaced-repetition schedule — right before you&apos;d forget. Quizzes score themselves
+              and explain every option. Your progress page keeps the receipts.
+            </p>
+            <ul className="mt-6 flex flex-col gap-3">
+              {[
+                "Decks generated from any topic or answer",
+                "Again / Good / Easy ratings reschedule each card",
+                "Quiz accuracy and streaks tracked automatically",
+              ].map((item) => (
+                <li key={item} className="flex items-start gap-2.5 text-sm text-white/70">
+                  <CheckIcon className="mt-0.5 size-4 shrink-0 text-cyan-300" />
+                  {item}
+                </li>
+              ))}
+            </ul>
+            <div className="mt-8">
+              <PrimaryButton href="/signup">Try the study tools</PrimaryButton>
+            </div>
+          </Reveal>
+
+          {/* Flashcard + quiz vignette */}
+          <Reveal delay={0.15}>
+            <div className="relative mx-auto max-w-md">
+              {/* Flashcard */}
+              <div className="rounded-2xl border border-white/12 bg-[#0A0E17] p-6 shadow-2xl shadow-black/40">
+                <p className="mb-3 flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wider text-white/35">
+                  <LayersIcon className="size-3" />
+                  Flashcard · Photosynthesis
+                </p>
+                <p className="text-[15px] font-medium leading-relaxed text-white/90">
+                  Which pigment absorbs light energy in photosynthesis?
+                </p>
+                <p className="mt-3 rounded-xl border border-cyan-400/20 bg-cyan-400/8 px-4 py-2.5 text-sm text-cyan-100/90">
+                  Chlorophyll — mainly chlorophyll-a in the chloroplasts.
+                </p>
+                <div className="mt-4 flex gap-2">
+                  {[
+                    { label: "Again", cls: "border-rose-400/30 text-rose-200" },
+                    { label: "Good", cls: "border-cyan-400/30 text-cyan-200" },
+                    { label: "Easy", cls: "border-emerald-400/30 text-emerald-200" },
+                  ].map((b) => (
+                    <span
+                      key={b.label}
+                      className={`rounded-lg border px-3.5 py-1.5 text-xs font-medium ${b.cls}`}
+                    >
+                      {b.label}
+                    </span>
+                  ))}
+                </div>
+              </div>
+              {/* Quiz card, offset */}
+              <div className="ml-8 mt-4 rounded-2xl border border-white/12 bg-[#0A0E17] p-5 shadow-2xl shadow-black/40 sm:-mt-6 sm:ml-24">
+                <p className="mb-2.5 flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wider text-white/35">
+                  <CircleHelpIcon className="size-3" />
+                  Quiz · 4 of 5
+                </p>
+                <p className="text-sm font-medium text-white/85">
+                  SI unit of electric current?
+                </p>
+                <div className="mt-3 flex flex-col gap-1.5 text-[13px]">
+                  <span className="rounded-lg border border-white/10 px-3 py-1.5 text-white/45">
+                    Volt
+                  </span>
+                  <span className="flex items-center justify-between rounded-lg border border-emerald-400/50 bg-emerald-400/12 px-3 py-1.5 text-emerald-100">
+                    Ampere
+                    <CheckIcon className="size-3.5" />
+                  </span>
+                  <span className="rounded-lg border border-white/10 px-3 py-1.5 text-white/45">
+                    Ohm
+                  </span>
+                </div>
+              </div>
+            </div>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* ═══ Honest numbers ═══ */}
+      <section className="bg-white px-5 py-16 md:px-8 md:py-20">
+        <div className="mx-auto grid max-w-5xl grid-cols-2 gap-10 text-center md:grid-cols-4">
+          {[
+            { value: "10", label: "Research modes" },
+            { value: "7", label: "AI models" },
+            { value: "100%", label: "Researched answers cited" },
+            { value: "₹0", label: "To get started" },
+          ].map((stat, i) => (
+            <Reveal key={stat.label} delay={i * 0.06}>
+              <p className="font-heading text-4xl font-semibold tracking-tight md:text-5xl">
+                {stat.value}
+              </p>
+              <p className="mt-2 text-sm text-black/45">{stat.label}</p>
+            </Reveal>
+          ))}
+        </div>
+      </section>
+
+      {/* ═══ FAQ ═══ */}
+      <section id="faq" className="scroll-mt-20 bg-[#F5F7FA] px-5 py-20 md:px-8 md:py-28">
+        <div className="mx-auto max-w-3xl">
+          <Reveal>
+            <p className="text-center text-xs font-medium uppercase tracking-[0.2em] text-black/40">
+              FAQ
+            </p>
+            <h2 className="mt-3 text-center font-heading text-3xl font-semibold tracking-tight sm:text-4xl">
+              Common questions
+            </h2>
+          </Reveal>
+          <div className="mt-10 flex flex-col gap-3">
+            {FAQS.map((faq, i) => (
+              <Reveal key={faq.q} delay={i * 0.04}>
+                <details className="group rounded-2xl border border-black/8 bg-white px-6 py-4 open:pb-5">
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-heading text-[15px] font-medium tracking-tight [&::-webkit-details-marker]:hidden">
+                    {faq.q}
+                    <span className="grid size-6 shrink-0 place-items-center rounded-full border border-black/10 text-black/40 transition-transform duration-200 group-open:rotate-45">
+                      <svg className="size-3" viewBox="0 0 12 12" fill="none">
+                        <path d="M6 1v10M1 6h10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                      </svg>
+                    </span>
+                  </summary>
+                  <p className="mt-3 max-w-xl text-sm leading-relaxed text-black/55">{faq.a}</p>
+                </details>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ═══ Final CTA ═══ */}
+      <section className="relative overflow-hidden px-5 py-24 md:px-8 md:py-32" style={{ background: INK }}>
+        <div className="pointer-events-none absolute inset-0 bg-[url('/cosmic-field.svg')] bg-cover bg-center opacity-15" />
+        <div
+          className="pointer-events-none absolute inset-x-0 top-0 h-full"
+          style={{
+            background:
+              "radial-gradient(ellipse 55% 60% at 50% 0%, rgba(129,140,248,0.15), transparent 70%)",
+          }}
+        />
+        <div className="relative mx-auto max-w-3xl text-center">
+          <Reveal>
+            <h2 className="font-heading text-4xl font-semibold leading-tight tracking-tight text-white sm:text-5xl">
+              Ask better questions.
+              <br />
+              Get answers you can check.
+            </h2>
+            <p className="mx-auto mt-4 max-w-md text-base text-white/50">
+              Free to start. Works for homework, boards, NCERT, and beyond.
+            </p>
+          </Reveal>
+          <Reveal delay={0.15} className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
+            <PrimaryButton href="/signup">Create free account</PrimaryButton>
+            <GhostButton href="/login">Sign in</GhostButton>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* ═══ Footer ═══ */}
+      <footer className="border-t border-white/8 px-5 py-10 md:px-8" style={{ background: INK }}>
+        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-6 sm:flex-row">
+          <div className="flex items-center gap-2.5">
+            <span className="grid size-7 place-items-center rounded-lg border border-white/15 bg-white/5 text-white">
+              <RocketIcon className="size-3" />
+            </span>
+            <span className="font-heading text-sm font-semibold tracking-tight text-white">
+              Learning Universe
+            </span>
+          </div>
+          <div className="flex items-center gap-6 text-sm text-white/45">
+            <Link href="/dashboard" className="transition-colors hover:text-white">
+              Dashboard
+            </Link>
+            <Link href="/dashboard/models" className="transition-colors hover:text-white">
+              Models
+            </Link>
+            <Link href="/signup" className="transition-colors hover:text-white">
+              Get started
+            </Link>
+          </div>
+          <p className="flex items-center gap-1.5 text-sm text-white/35">
+            <BookOpenCheckIcon className="size-3.5" />
+            Built by Rahul Gupta
+          </p>
+        </div>
+      </footer>
+    </main>
   );
 }
